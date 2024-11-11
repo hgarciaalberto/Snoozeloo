@@ -2,11 +2,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.dagger.hilt)
 }
 
 android {
     namespace = "com.devcampus.snoozeloo"
     compileSdk = 35
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "com.devcampus.snoozeloo"
@@ -36,25 +39,37 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
-    buildToolsVersion = "35.0.0"
 }
 
 dependencies {
 
+    // Android
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+
+    // Compose
+    implementation(platform(libs.compose.bom))
+    implementation(libs.bundles.composeBundle)
+
+    // Hilt android
+    implementation(libs.androidx.hilt.common)
+    ksp(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    kspTest(libs.hilt.android.compiler)
+
+    // KSP
+    implementation(libs.ksp.api)
+
+    // Timber
+    implementation(libs.timber)
+
+    // Tests
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }
