@@ -3,6 +3,7 @@ activityCompose = "1.9.3"
 agp = "8.7.2"
 composeBom = "2024.10.01"
 coreKtx = "1.15.0"
+coreSplashscreen = "1.0.1"
 hiltVersion = "2.52"
 hiltAndroidVersion = "1.2.0"
 junit = "4.13.2"
@@ -14,6 +15,7 @@ timber = "5.0.1"
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-hilt-common = { group = "androidx.hilt", name = "hilt-common", version.ref = "hiltAndroidVersion" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltAndroidVersion" }

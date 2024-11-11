@@ -33,6 +33,11 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+private val CustomLightColorScheme = lightColorScheme(
+    primary = primary,
+    background = background
+)
+
 @Composable
 fun SnoozelooTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -47,7 +52,7 @@ fun SnoozelooTheme(
         }
 
         darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> CustomLightColorScheme
     }
 
     MaterialTheme(
