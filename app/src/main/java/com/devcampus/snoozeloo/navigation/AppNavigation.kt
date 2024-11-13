@@ -7,8 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.devcampus.snoozeloo.Greeting
+import com.devcampus.snoozeloo.ui.screens.list.AlarmListScreen
 
 @Composable
 fun AppNavigation() {
@@ -19,12 +18,13 @@ fun AppNavigation() {
 
         NavHost(
             navController = navController,
-            startDestination = Destinations.Greetings,
+            startDestination = Destinations.AlarmList,
             modifier = Modifier.padding(paddingValues),
         ) {
-            composable<Destinations.Greetings> {
-                val args = it.toRoute<Destinations.Greetings>()
-                Greeting(args.name)
+            composable<Destinations.AlarmList> {
+                AlarmListScreen(
+                    navController = navController,
+                )
             }
         }
     }

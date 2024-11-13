@@ -39,18 +39,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier.fillMaxSize(),
-    ) {
-        Text(
-            text = "Hello $name!",
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
