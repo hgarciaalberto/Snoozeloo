@@ -10,13 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.devcampus.snoozeloo.R
 
 val MontserratFontFamily = FontFamily(
-    Font(R.font.montserrat_variable_font_wght),
+    Font(R.font.montserrat_medium),
 )
 
 val Typography = Typography(
@@ -29,12 +27,7 @@ val Typography = Typography(
     titleLarge = Typography().titleLarge.copy(fontFamily = MontserratFontFamily),
     titleMedium = Typography().titleMedium.copy(fontFamily = MontserratFontFamily),
     titleSmall = Typography().titleSmall.copy(fontFamily = MontserratFontFamily),
-    bodyLarge = Typography().bodyLarge.copy(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp,
-        lineHeight = 19.5.sp,
-    ),
+    bodyLarge = Typography().bodyLarge.copy(fontFamily = MontserratFontFamily),
     bodyMedium = Typography().bodyMedium.copy(fontFamily = MontserratFontFamily),
     bodySmall = Typography().bodySmall.copy(fontFamily = MontserratFontFamily),
     labelLarge = Typography().labelLarge.copy(fontFamily = MontserratFontFamily),
@@ -44,7 +37,7 @@ val Typography = Typography(
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun PreviewDefaultMaterialThemeTypography() {
+private fun PreviewDefaultMaterialThemeMyTypography() {
     SnoozelooTheme() {
         Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
             Text(text = "displayLarge", style = MaterialTheme.typography.displayLarge)
@@ -57,7 +50,7 @@ private fun PreviewDefaultMaterialThemeTypography() {
             Text(text = "titleMedium", style = MaterialTheme.typography.titleMedium)
             Text(text = "titleSmall", style = MaterialTheme.typography.titleSmall)
             Text(text = "bodyLarge", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Education", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "bodyMedium", style = MaterialTheme.typography.bodyMedium)
             Text(text = "bodySmall", style = MaterialTheme.typography.bodySmall)
             Text(text = "labelLarge", style = MaterialTheme.typography.labelLarge)
             Text(text = "labelMedium", style = MaterialTheme.typography.labelMedium)
