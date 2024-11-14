@@ -57,7 +57,7 @@ abstract class BaseViewModel<T>(
 
     suspend fun emitStateCopySuspend(
         newState: State = State.Success,
-        data: (T?) -> T?
+        data: (T?) -> T? = { state.value.data }
     ) = state.emit(
         UiState(
             state = newState,
@@ -67,7 +67,7 @@ abstract class BaseViewModel<T>(
 
     fun emitStateCopy(
         newState: State = State.Success,
-        data: (T?) -> T?
+        data: (T?) -> T? = { null }
     ) = launch { emitStateCopySuspend(newState, data) }
 
 

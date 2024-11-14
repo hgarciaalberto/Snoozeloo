@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
+import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.handleEvent
 import com.devcampus.snoozeloo.dto.Alarm
@@ -58,6 +61,7 @@ fun AlarmListScreen(
 ) {
 
     val context = LocalContext.current
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val eventsData by viewModel.events.collectAsStateWithLifecycle()
 
@@ -100,17 +104,20 @@ fun AlarmListScreen(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
-        if (state.alarms.isNotEmpty()) {
-            AlarmListContent(
-                alarms = state.alarms,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                toggleAlarm = viewModel::toggleAlarm
-            )
-        } else {
-            AlarmListEmptyContent()
+
+        AlarmListContent(
+            alarms = state.data?.alarms ?: emptyList(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            toggleAlarm = viewModel::toggleAlarm
+        )
+
+        if (state.state is Loading) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
