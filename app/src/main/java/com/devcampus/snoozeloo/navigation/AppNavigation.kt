@@ -1,8 +1,9 @@
 package com.devcampus.snoozeloo.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,11 +21,12 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     Scaffold { paddingValues ->
-
         NavHost(
             navController = navController,
             startDestination = Destinations.AlarmList,
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .statusBarsPadding()
+                .consumeWindowInsets(paddingValues)
         ) {
             composable<Destinations.AlarmList> {
                 AlarmListScreen(
@@ -33,9 +35,10 @@ fun AppNavigation() {
             }
 
             composable<Destinations.AlarmDetail> {
-//                val args = it.toRoute<Destinations.AlarmDetail>()
+//            val args = it.toRoute<Destinations.AlarmDetail>()
                 AlarmDetailsScreen(
                     navController = navController,
+//                alarm = args.alarm
                 )
             }
         }

@@ -2,16 +2,21 @@ package com.devcampus.snoozeloo.ui.screens.list
 
 import android.icu.text.SimpleDateFormat
 import android.widget.Toast
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -25,9 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,42 +59,41 @@ fun AlarmListScreen(
 
     Scaffold(
         floatingActionButton = {
-            Box(
+            FloatingActionButton(
+                onClick = {
+                    Toast.makeText(context, "TODO: Add Alarm", Toast.LENGTH_SHORT).show()
+                    navController.navigate(Destinations.AlarmDetail)
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(28.dp),
-                contentAlignment = Alignment.BottomCenter
+                    .padding(bottom = 18.dp)
+                    .wrapContentSize()
+                    .clip(MaterialTheme.shapes.extraLarge)
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        Toast.makeText(context, "TODO: Add Alarm", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Destinations.AlarmDetail)
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .clip(MaterialTheme.shapes.extraLarge)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        contentDescription = "Add Alarm",
-                        modifier = Modifier.scale(1.5f, 1.5f)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = "Add Alarm",
+                    modifier = Modifier.scale(1.5f, 1.5f)
+                )
             }
         },
+        floatingActionButtonPosition = FabPosition.Center,
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
-        AlarmListContent(
-            alarms = state.alarms,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            toggleAlarm = viewModel::toggleAlarm
-        )
+        if (state.alarms.isNotEmpty()) {
+            AlarmListContent(
+                alarms = state.alarms,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                toggleAlarm = viewModel::toggleAlarm
+            )
+        } else {
+            AlarmListEmptyContent()
+        }
     }
 }
 
@@ -164,6 +171,34 @@ fun AlarmListContent(
 }
 
 @Composable
+fun AlarmListEmptyContent() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(R.drawable.alarm),
+            contentDescription = "Add Alarm",
+            modifier = Modifier.scale(1f),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = """
+               It's empty! Add the first alarm so you
+               don't miss an important moment!
+            """.trimIndent(),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 12.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
 @Preview(backgroundColor = 0xFFA8A5A5, showBackground = true)
 private fun AlarmListContentPreview() {
     SnoozelooTheme {
@@ -173,5 +208,13 @@ private fun AlarmListContentPreview() {
                 .fillMaxSize()
                 .padding(16.dp),
         )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun AlarmListEmptyContentPreview() {
+    SnoozelooTheme {
+        AlarmListEmptyContent()
     }
 }
