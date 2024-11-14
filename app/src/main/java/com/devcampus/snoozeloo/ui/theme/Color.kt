@@ -13,3 +13,4 @@ val Pink40 = Color(0xFF7D5260)
 //Custom Light Color
 val primary = Color(0xFF4664FF)
 val background = Color(0xFFF6F6F6)
+val surface = Color(0xFFFFFFFF)
