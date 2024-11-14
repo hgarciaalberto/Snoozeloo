@@ -21,11 +21,9 @@ sealed class State : Parcelable {
             get() = UUID.randomUUID().toString()
     }
 
-    data class Error(val message : String) : State() { // al posto di message si puo mettere un DATAModel per un dialog di errore
+    // Instead of a message, a data model can be used for an error dialog
+    data class Error(val message : String) : State() {
         override val id: String
             get() = UUID.randomUUID().toString()
-
     }
-
-
 }

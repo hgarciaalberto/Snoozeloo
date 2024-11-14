@@ -1,6 +1,5 @@
 package com.devcampus.snoozeloo.core
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -10,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.UUID
 
 abstract class BaseViewModel<T>(
@@ -17,31 +17,30 @@ abstract class BaseViewModel<T>(
     val coroutineDispatcher: CoroutineDispatcher? = Dispatchers.IO
 ) : ViewModel() {
 
-    private val _state : MutableStateFlow<UiState<T>> =
-        MutableStateFlow(defaultState)
-    val state : StateFlow<UiState<T>> = _state
+    val state: StateFlow<UiState<T>>
+        field:MutableStateFlow<UiState<T>> = MutableStateFlow(defaultState)
 
-    private val _events : MutableStateFlow<EventsData> =
-        MutableStateFlow(EventsData())
-    val events : StateFlow<EventsData> = _events
+    val events: StateFlow<EventsData>
+        field:MutableStateFlow<EventsData> = MutableStateFlow(EventsData())
 
-
-    fun launch(
-        block: suspend CoroutineScope.() -> Unit
-    ) = viewModelScope.launch (coroutineDispatcher ?: Dispatchers.IO, block = block )
-
+    fun launch(block: suspend CoroutineScope.() -> Unit) =
+        viewModelScope.launch(coroutineDispatcher ?: Dispatchers.IO, block = block)
 
     suspend fun emitLoadingSuspend() =
-        _state.emit(state.value.copy(state = State.Loading(), id = UUID.randomUUID()))
+        state.emit(
+            state.value.copy(
+                state = State.Loading(), id = UUID.randomUUID()
+            )
+        )
 
     fun emitLoading() = launch { emitLoadingSuspend() }
 
     suspend fun emitSuccessSuspend() =
-        _state.emit(state.value.copy(state = State.Success, id = UUID.randomUUID()))
+        state.emit(state.value.copy(state = State.Success, id = UUID.randomUUID()))
 
     fun emitSuccess() = launch { emitSuccessSuspend() }
 
-    suspend fun emitSuccessSuspend(model : T) = emitStateSuspend(
+    suspend fun emitSuccessSuspend(model: T) = emitStateSuspend(
         UiState(
             data = model,
             state = State.Success
@@ -53,28 +52,29 @@ abstract class BaseViewModel<T>(
     ) = launch { emitStateSuspend(state) }
 
     suspend fun emitStateSuspend(
-        state : UiState<T>
-    ) = _state.emit(state)
+        state: UiState<T>
+    ) = this.state.emit(state)
 
     suspend fun emitStateCopySuspend(
-        newState : State = State.Success,
-        data : (T?) -> T?
-    ) = _state.emit(
+        newState: State = State.Success,
+        data: (T?) -> T?
+    ) = state.emit(
         UiState(
             state = newState,
             data = data.invoke(state.value.data)
         )
     )
+
     fun emitStateCopy(
-        newState : State = State.Success,
-        data : (T?) -> T?
+        newState: State = State.Success,
+        data: (T?) -> T?
     ) = launch { emitStateCopySuspend(newState, data) }
 
 
-    fun emitEvent(vararg event: UIEvent) = launch {emitEventSuspend(*event)}
+    fun emitEvent(vararg event: UIEvent) = launch { emitEventSuspend(*event) }
 
     fun emitEventSuspend(vararg event: UIEvent) {
-        _events.update {
+        events.update {
             it.copy(
                 events = it.events.plus(event.toList()),
                 key = UUID.randomUUID()
@@ -83,21 +83,15 @@ abstract class BaseViewModel<T>(
     }
 
     fun removeEvent(event: UIEvent) {
-        _events.update { composeEvents ->
+        events.update { composeEvents ->
             composeEvents.copy(
                 key = if (composeEvents.events.size == 1) UUID.randomUUID() else composeEvents.key,
                 events = composeEvents.events.filter { event.key != it.key }
             )
-
         }
     }
 
-    open fun handleEvent(event: UIEvent){
-        Log.d("BaseViewModel", "event unhandled")
-
+    open fun handleEvent(event: UIEvent) {
+        Timber.tag("BaseViewModel").d("event unhandled")
     }
-
-
-
-
 }

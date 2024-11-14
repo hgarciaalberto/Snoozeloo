@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
+import com.devcampus.snoozeloo.core.UIEvent
+import com.devcampus.snoozeloo.core.handleEvent
 import com.devcampus.snoozeloo.dto.Alarm
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
@@ -56,13 +59,28 @@ fun AlarmListScreen(
 
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val eventsData by viewModel.events.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = eventsData.key) {
+        eventsData.events.forEach { event ->
+
+            if (event !is UIEvent.CommonUiEvent.Unknown) {
+                handleEvent(
+                    composeViewModel = viewModel,
+                    navController = navController,
+                    event = event
+                )
+            }
+            viewModel.removeEvent(event)
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     Toast.makeText(context, "TODO: Add Alarm", Toast.LENGTH_SHORT).show()
-                    navController.navigate(Destinations.AlarmDetail)
+                    viewModel.emitEvent(UIEvent.CommonUiEvent.NavigationEvent.NavigateTo(route = Destinations.AlarmDetail))
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier

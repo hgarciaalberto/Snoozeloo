@@ -1,10 +1,10 @@
 package com.devcampus.snoozeloo.core
 
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 
 fun  <UiStateType> handleEvent(
     composeViewModel : BaseViewModel<UiStateType>,
-    navController : NavHostController,
+    navController : NavController,
     event : UIEvent
 ) {
     when (event) {
@@ -12,7 +12,6 @@ fun  <UiStateType> handleEvent(
             navController.navigate(event.route)
         }
 
-        else -> composeViewModel.handleEvent(event) // qui forse solo la callback del vm e non il vm
-
+        else -> composeViewModel.handleEvent(event)
     }
 }

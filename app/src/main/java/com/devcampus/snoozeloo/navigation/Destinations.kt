@@ -2,11 +2,11 @@ package com.devcampus.snoozeloo.navigation
 
 import kotlinx.serialization.Serializable
 
-object Destinations {
+sealed interface Destinations {
 
     @Serializable
-    object AlarmList
+    object AlarmList : Destinations
 
     @Serializable
-    object AlarmDetail
+    object AlarmDetail : Destinations
 }
