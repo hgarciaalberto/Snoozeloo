@@ -12,6 +12,7 @@ kotlinxSerializationCore = "1.7.3"
 ksp = "2.0.21-1.0.25"
 lifecycleRuntimeKtx = "2.8.7"
 navigationCompose = "2.8.4"
+roomVersion = "2.6.1"
 timber = "5.0.1"
 
 [libraries]
@@ -22,6 +23,9 @@ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecyc
 androidx-hilt-common = { group = "androidx.hilt", name = "hilt-common", version.ref = "hiltAndroidVersion" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltAndroidVersion" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltAndroidVersion" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }

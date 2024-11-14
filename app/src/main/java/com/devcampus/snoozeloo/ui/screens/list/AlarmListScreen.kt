@@ -48,7 +48,7 @@ import com.devcampus.snoozeloo.R
 import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.handleEvent
-import com.devcampus.snoozeloo.dto.Alarm
+import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
@@ -124,9 +124,9 @@ fun AlarmListScreen(
 
 @Composable
 fun AlarmListContent(
-    alarms: List<Alarm>,
+    alarms: List<AlarmEntity>,
     modifier: Modifier = Modifier,
-    toggleAlarm: (Alarm) -> Unit = {},
+    toggleAlarm: (AlarmEntity) -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxSize()

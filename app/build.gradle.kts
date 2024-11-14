@@ -73,9 +73,13 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     kspTest(libs.hilt.android.compiler)
 
+    // Room
+    implementation (libs.androidx.room.runtime)
+    ksp (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx)
+
     // KSP
     implementation(libs.ksp.api)
-
 
     implementation(libs.kotlinx.serialization.core)
 
