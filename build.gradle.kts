@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.google.dagger.hilt) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.serialize) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
 }

@@ -2,37 +2,32 @@ package com.devcampus.snoozeloo.ui.screens.list
 
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.devcampus.snoozeloo.core.BaseViewModel
+import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.dto.Alarm
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class AlarmListViewModel @Inject constructor() : ViewModel() {
+class AlarmListViewModel @Inject constructor() : BaseViewModel<AlarmListViewModel.AlarmListState>() {
 
-    val state: StateFlow<State>
-        field : MutableStateFlow<State> = MutableStateFlow(State())
+//    val state: StateFlow<AlarmListState>
+//        field : MutableStateFlow<State> = MutableStateFlow(AlarmListState())
 
     init {
-        viewModelScope.launch {
-            state.update {
-                it.copy(
-                    alarms = FAKE_ALARMS,
-                    isLoading = false,
-                )
-            }
+        launch {
+            emitLoadingSuspend()
+            emitSuccessSuspend(AlarmListState(FAKE_ALARMS))
         }
     }
 
-    fun toggleAlarm(alarm: Alarm) {
-        state.update {
-            it.copy(
+    fun toggleAlarm(alarm: Alarm) = launch {
+        emitStateCopySuspend(newState = Loading())
+        delay(1000) // Just for testing purposes
+        emitStateCopySuspend {
+            it?.copy(
                 alarms = it.alarms.map {
                     if (it.id == alarm.id) {
                         it.copy(enabled = !it.enabled)
@@ -44,15 +39,9 @@ class AlarmListViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    data class State(
-        val alarms: List<Alarm>,
-        val isLoading: Boolean,
-    ) {
-        constructor() : this(
-            alarms = emptyList(),
-            isLoading = false,
-        )
-    }
+    data class AlarmListState(
+        val alarms: List<Alarm> = emptyList<Alarm>()
+    )
 
     companion object {
         @SuppressLint("ConstantLocale")
