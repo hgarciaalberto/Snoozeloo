@@ -35,7 +35,7 @@ class AlarmListViewModel @Inject constructor(
 
     fun toggleAlarm(alarm: AlarmEntity) = launch {
         emitStateCopySuspend(newState = Loading())
-        delay(1000) // Just for testing purposes
+        delay(700) // Just for testing purposes
         val updatedAlarm = alarm.copy(enabled = !alarm.enabled)
         alarmDao.updateAlarm(updatedAlarm)
     }

@@ -26,14 +26,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,9 +43,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
 import com.devcampus.snoozeloo.core.State.Loading
-import com.devcampus.snoozeloo.core.UIEvent
-import com.devcampus.snoozeloo.core.handleEvent
+import com.devcampus.snoozeloo.core.UIEvent.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.extensions.HandleEvents
+import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
 import java.util.Locale
@@ -58,31 +57,21 @@ fun AlarmListScreen(
     viewModel: AlarmListViewModel = hiltViewModel()
 ) {
 
-    val context = LocalContext.current
-
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val eventsData by viewModel.events.collectAsStateWithLifecycle()
 
-    LaunchedEffect(key1 = eventsData.key) {
-        eventsData.events.forEach { event ->
-
-            if (event !is UIEvent.CommonUiEvent.Unknown) {
-                handleEvent(
-                    composeViewModel = viewModel,
-                    navController = navController,
-                    event = event
-                )
-            }
-            viewModel.removeEvent(event)
-        }
+    viewModel.run {
+        HandleEvents(navController)
     }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-//                    viewModel.emitEvent(UIEvent.CommonUiEvent.NavigationEvent.NavigateTo(route = Destinations.AlarmDetail))
-                    viewModel.addAlarm()
+                    viewModel.emitEvent(
+                        NavigationEvent.NavigateTo(
+                            route = Destinations.AlarmDetail
+                        )
+                    )
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -148,7 +137,6 @@ fun AlarmListContent(
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .clip(MaterialTheme.shapes.large),
-//                        .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.large),
                     overlineContent = {
                         Text(
                             text = alarm.label,
