@@ -19,7 +19,6 @@ data class AlarmEntity(
     val enabled: Boolean
 ) {
     constructor() : this(
-        id = -1,
         label = "",
         time = Calendar.getInstance().time,
         repeat = "",

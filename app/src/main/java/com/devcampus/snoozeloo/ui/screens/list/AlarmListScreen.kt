@@ -1,7 +1,6 @@
 package com.devcampus.snoozeloo.ui.screens.list
 
 import android.icu.text.SimpleDateFormat
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +48,6 @@ import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.handleEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
-import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
 import java.util.Locale
@@ -83,8 +81,8 @@ fun AlarmListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    Toast.makeText(context, "TODO: Add Alarm", Toast.LENGTH_SHORT).show()
-                    viewModel.emitEvent(UIEvent.CommonUiEvent.NavigationEvent.NavigateTo(route = Destinations.AlarmDetail))
+//                    viewModel.emitEvent(UIEvent.CommonUiEvent.NavigationEvent.NavigateTo(route = Destinations.AlarmDetail))
+                    viewModel.addAlarm()
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -105,14 +103,18 @@ fun AlarmListScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
 
-        AlarmListContent(
-            alarms = state.data?.alarms ?: emptyList(),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            toggleAlarm = viewModel::toggleAlarm
-        )
+        if (state.data?.alarms?.isNotEmpty() == true) {
+            AlarmListContent(
+                alarms = state.data!!.alarms,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                toggleAlarm = viewModel::toggleAlarm
+            )
+        } else {
+            AlarmListEmptyContent()
+        }
 
         if (state.state is Loading) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

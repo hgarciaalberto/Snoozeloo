@@ -17,10 +17,8 @@ class AlarmListViewModel @Inject constructor(
 ) : BaseViewModel<AlarmListViewModel.AlarmListState>() {
 
     init {
-
         launch {
             emitLoadingSuspend()
-
             alarmDao.getAllAlarms().collect { alarms ->
                 emitStateCopySuspend {
                     it?.copy(alarms = alarms)
@@ -34,6 +32,16 @@ class AlarmListViewModel @Inject constructor(
         delay(1000) // Just for testing purposes
         val updatedAlarm = alarm.copy(enabled = !alarm.enabled)
         alarmDao.updateAlarm(updatedAlarm)
+    }
+
+    fun addAlarm() = launch {
+        alarmDao.insertAlarm(
+            AlarmEntity().copy(
+                label = "Go to bed",
+                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).parse("08:00 PM")!!,
+                enabled = true,
+            )
+        )
     }
 
     data class AlarmListState(
