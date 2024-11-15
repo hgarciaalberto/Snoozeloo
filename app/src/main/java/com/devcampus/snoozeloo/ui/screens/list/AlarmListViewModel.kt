@@ -40,7 +40,6 @@ class AlarmListViewModel @Inject constructor(
 //            }
 //            else -> super.handleEvent(event)
 //        }
-//
 //    }
 
     fun toggleAlarm(alarm: AlarmEntity) = launch {
