@@ -64,8 +64,9 @@ dependencies {
     implementation(libs.bundles.composeBundle)
 
     // Hilt android
-    implementation(libs.androidx.hilt.common)
     ksp(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.common)
+//    implementation (libs.androidx.hilt.lifecycle.viewmodel)
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Hilt

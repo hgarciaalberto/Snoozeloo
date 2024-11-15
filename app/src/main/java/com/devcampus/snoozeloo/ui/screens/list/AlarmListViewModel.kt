@@ -2,39 +2,38 @@ package com.devcampus.snoozeloo.ui.screens.list
 
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
-import androidx.test.core.app.ActivityScenario.launch
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.repository.room.AlarmDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class AlarmListViewModel @Inject constructor() : BaseViewModel<AlarmListViewModel.AlarmListState>() {
+class AlarmListViewModel @Inject constructor(
+    private val alarmDao: AlarmDao
+) : BaseViewModel<AlarmListViewModel.AlarmListState>() {
 
     init {
+
         launch {
             emitLoadingSuspend()
-            emitSuccessSuspend(AlarmListState(FAKE_ALARMS))
+
+            alarmDao.getAllAlarms().collect { alarms ->
+                emitStateCopySuspend {
+                    it?.copy(alarms = alarms)
+                }
+            }
         }
     }
 
     fun toggleAlarm(alarm: AlarmEntity) = launch {
         emitStateCopySuspend(newState = Loading())
         delay(1000) // Just for testing purposes
-        emitStateCopySuspend {
-            it?.copy(
-                alarms = it.alarms.map {
-                    if (it.id == alarm.id) {
-                        it.copy(enabled = !it.enabled)
-                    } else {
-                        it
-                    }
-                }
-            )
-        }
+        val updatedAlarm = alarm.copy(enabled = !alarm.enabled)
+        alarmDao.updateAlarm(updatedAlarm)
     }
 
     data class AlarmListState(

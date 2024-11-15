@@ -1,11 +1,12 @@
 [versions]
 activityCompose = "1.9.3"
 agp = "8.7.2"
-composeBom = "2024.10.01"
+composeBom = "2024.11.00"
 coreKtx = "1.15.0"
 coreSplashscreen = "1.0.1"
 hiltVersion = "2.52"
 hiltAndroidVersion = "1.2.0"
+#hiltLifecycleViewmodel = "1.0.0"
 junit = "4.13.2"
 kotlin = "2.0.21"
 kotlinxSerializationCore = "1.7.3"
@@ -20,6 +21,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+#androidx-hilt-lifecycle-viewmodel = { module = "androidx.hilt:hilt-lifecycle-viewmodel", version.ref = "hiltLifecycleViewmodel" }
 androidx-hilt-common = { group = "androidx.hilt", name = "hilt-common", version.ref = "hiltAndroidVersion" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltAndroidVersion" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltAndroidVersion" }
