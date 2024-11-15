@@ -109,7 +109,7 @@ fun AlarmListScreen(
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
             }
-        }
+        )
     }
 }
 
