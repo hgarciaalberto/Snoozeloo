@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.State.Loading
+import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.repository.room.AlarmDao
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,12 @@ import javax.inject.Inject
 @HiltViewModel
 class AlarmListViewModel @Inject constructor(
     private val alarmDao: AlarmDao
-) : BaseViewModel<AlarmListViewModel.AlarmListState>() {
+) : BaseViewModel<AlarmListViewModel.AlarmListState>(
+    defaultState = UiState(
+        state = Loading(),
+        data = AlarmListState()
+    )
+) {
 
     init {
         launch {
