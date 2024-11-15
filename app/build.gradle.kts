@@ -64,8 +64,9 @@ dependencies {
     implementation(libs.bundles.composeBundle)
 
     // Hilt android
-    implementation(libs.androidx.hilt.common)
     ksp(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.common)
+//    implementation (libs.androidx.hilt.lifecycle.viewmodel)
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Hilt
@@ -73,9 +74,13 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     kspTest(libs.hilt.android.compiler)
 
+    // Room
+    implementation (libs.androidx.room.runtime)
+    ksp (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx)
+
     // KSP
     implementation(libs.ksp.api)
-
 
     implementation(libs.kotlinx.serialization.core)
 

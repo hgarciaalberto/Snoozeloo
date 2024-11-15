@@ -10,7 +10,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-//        configureLogging()
+        configureLogging()
     }
 
     private fun configureLogging() {
