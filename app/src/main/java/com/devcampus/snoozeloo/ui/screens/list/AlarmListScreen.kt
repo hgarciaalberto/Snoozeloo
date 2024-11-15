@@ -99,8 +99,10 @@ fun AlarmListScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp),
-                toggleAlarm = viewModel::toggleAlarm
-            )
+                toggleAlarm = {
+                    viewModel.emitEvent(
+                        AlarmEvents.ToggleAlarmEvent(it))
+                })
         } else {
             AlarmListEmptyContent()
         }

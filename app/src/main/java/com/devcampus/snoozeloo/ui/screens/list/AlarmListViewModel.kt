@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.State.Loading
+import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.repository.room.AlarmDao
@@ -21,6 +22,14 @@ class AlarmListViewModel @Inject constructor(
         data = AlarmListState()
     )
 ) {
+
+    override fun handleEvent(event: UIEvent) {
+        when(event){
+            is AlarmEvents.ToggleAlarmEvent -> toggleAlarm(event.alarm)
+            else -> super.handleEvent(event)
+        }
+
+    }
 
     init {
         launch {
