@@ -9,11 +9,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.devcampus.snoozeloo.core.ListenForViewModelEvent
+import com.devcampus.snoozeloo.core.ListenForViewModelState
+import com.devcampus.snoozeloo.core.UIEvent
+import com.devcampus.snoozeloo.core.handleEvent
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListScreen
+import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel
 
 @Composable
 fun AppNavigation() {
@@ -21,6 +29,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     Scaffold { paddingValues ->
+
         NavHost(
             navController = navController,
             startDestination = Destinations.AlarmList,
@@ -35,15 +44,15 @@ fun AppNavigation() {
             }
 
             composable<Destinations.AlarmDetail> {
-//            val args = it.toRoute<Destinations.AlarmDetail>()
+//                val args = it.toRoute<Destinations.AlarmDetail>()
                 AlarmDetailsScreen(
                     navController = navController,
-//                alarm = args.alarm
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun AlarmDetailsScreen(navController: NavController) {
