@@ -13,4 +13,9 @@ sealed interface Destinations : Destination {
     data class AlarmDetail(
         val alarm: AlarmEntity?,
     ) : Destinations
+
+    @Serializable
+    data class AlarmTrigger(
+        val alarm: AlarmEntity,
+    ) : Destinations
 }
