@@ -17,6 +17,13 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
 
     override fun handleEvent(event: UIEvent) {
         when(event){
+            is AlarmDetailEvent.ChangeAlarmNameEvent -> {
+                emitStateCopy {
+                    it?.copy(
+                        alarmName = event.name
+                    )
+                }
+            }
             is AlarmDetailEvent.ChangeMinuteEvent -> {
                 emitStateCopy{
                     it?.copy(

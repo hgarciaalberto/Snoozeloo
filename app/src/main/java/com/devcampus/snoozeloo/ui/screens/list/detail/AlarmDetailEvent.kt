@@ -8,5 +8,7 @@ sealed class AlarmDetailEvent : UIEvent {
     override val key: UUID = randomUUID()
     data class ChangeHourEvent(val hour : String) : AlarmDetailEvent()
     data class ChangeMinuteEvent(val minute : String) : AlarmDetailEvent()
+    data class ChangeAlarmNameEvent(val name : String) : AlarmDetailEvent()
+
 
 }
