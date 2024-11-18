@@ -8,6 +8,6 @@ data class AlarmDetailState (
 )
 
 data class AlarmTime(
-    val hour : Int = 12,
-    val minute : Int = 45
+    val hour : String = "12",
+    val minute : String = "45"
 )

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -111,10 +113,13 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding TODO como se puede mejorar esto?
-                        value = state.alarmTime.hour.toString(),
+                        value = state.alarmTime.hour,
                         onValueChange = {
-                            //viewModel.emitEvent(ChangeHourEvent())
+                            viewModel.emitEvent(AlarmDetailEvent.ChangeHourEvent(it))
                         },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
                         colors = customColors(),
                         shape = RoundedCornerShape(10.dp),
                         textStyle = fontStyle52Medium.copy(textAlign = TextAlign.Center)
@@ -132,14 +137,15 @@ fun AlarmDetailContent(
                             .size(width = 128.dp, height = 95.dp), // Add padding
                         value = state.alarmTime.minute.toString(),
                         onValueChange = {
-                            //viewModel.emitEvent(ChangeHourEvent())
+                            viewModel.emitEvent(AlarmDetailEvent.ChangeMinuteEvent(it))
                         },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
                         colors = customColors(),
                         shape = RoundedCornerShape(10.dp),
                         textStyle = fontStyle52Medium.copy(textAlign = TextAlign.Center)
                     )
-
-
                 } 
                 Text(
                     modifier = Modifier.padding(bottom = 16.dp),
