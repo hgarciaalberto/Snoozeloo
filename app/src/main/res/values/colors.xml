@@ -12,4 +12,7 @@
     <color name="primary">#FF4664FF</color>
     <color name="background">#FFF6F6F6</color>
     <color name="disabled">#FF858585</color>
+    <color name="moreGray">#858585</color>
+    <color name="customBlack">#0D0F19</color>
+
 </resources>

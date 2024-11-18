@@ -22,6 +22,7 @@ import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.handleEvent
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListScreen
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel
+import com.devcampus.snoozeloo.ui.screens.list.detail.AlarmDetailScreen
 
 @Composable
 fun AppNavigation() {
@@ -45,18 +46,10 @@ fun AppNavigation() {
 
             composable<Destinations.AlarmDetail> {
 //                val args = it.toRoute<Destinations.AlarmDetail>()
-                AlarmDetailsScreen(
+                AlarmDetailScreen(
                     navController = navController,
                 )
             }
         }
-    }
-}
-
-
-@Composable
-fun AlarmDetailsScreen(navController: NavController) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Center) {
-        Text(text = "Alarm Details")
     }
 }
