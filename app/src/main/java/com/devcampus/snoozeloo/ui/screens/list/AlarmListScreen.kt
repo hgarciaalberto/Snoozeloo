@@ -46,6 +46,8 @@ import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.core.UIEvent.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.extensions.HandleEvents
+import com.devcampus.snoozeloo.extensions.formatTimeUntil
+import com.devcampus.snoozeloo.extensions.nextAlarmDate
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
@@ -101,7 +103,8 @@ fun AlarmListScreen(
                     .padding(16.dp),
                 toggleAlarm = {
                     viewModel.emitEvent(
-                        AlarmEvents.ToggleAlarmEvent(it))
+                        AlarmEvents.ToggleAlarmEvent(it)
+                    )
                 })
         } else {
             AlarmListEmptyContent()
@@ -130,9 +133,7 @@ fun AlarmListContent(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        LazyColumn(
-
-        ) {
+        LazyColumn {
             items(alarms) { alarm ->
 
                 ListItem(
@@ -165,7 +166,7 @@ fun AlarmListContent(
                     },
                     supportingContent = {
                         Text(
-                            text = "Supporting Content",
+                            text = alarm.time.nextAlarmDate(useWeekday = false).formatTimeUntil(),
                             style = MaterialTheme.typography.bodySmall,
                             color = colorResource(id = R.color.disabled)
                         )
