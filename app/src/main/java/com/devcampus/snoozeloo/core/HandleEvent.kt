@@ -8,7 +8,7 @@ fun  <UiStateType> handleEvent(
     event : UIEvent
 ) {
     when (event) {
-        is UIEvent.CommonUiEvent.NavigationEvent.NavigateTo -> {
+        is CommonUiEvent.NavigationEvent.NavigateTo -> {
             navController.navigate(event.route)
         }
 

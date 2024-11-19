@@ -1,7 +1,6 @@
 package com.devcampus.snoozeloo.core
 
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -34,7 +33,7 @@ fun <UiStateType> ListenForViewModelEvent(
     LaunchedEffect(key1 = eventsData.key) {
         eventsData.events.forEach { event ->
 
-            if (event !is UIEvent.CommonUiEvent.Unknown) {
+            if (event !is CommonUiEvent.Unknown) {
                 handleEvent(
                     composeViewModel = viewModel,
                     navController = navController,
