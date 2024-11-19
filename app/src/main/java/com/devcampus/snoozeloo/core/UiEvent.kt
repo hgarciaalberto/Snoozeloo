@@ -12,6 +12,7 @@ sealed class CommonUiEvent : UIEvent {
 
     sealed class NavigationEvent : CommonUiEvent() {
         data class NavigateTo(val route: Destinations) : NavigationEvent()
+        object NavigateBack : NavigationEvent()
     }
 
     data object Unknown : CommonUiEvent()

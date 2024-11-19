@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
+import com.devcampus.snoozeloo.core.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.extensions.HandleEvents
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
@@ -55,14 +56,13 @@ import com.devcampus.snoozeloo.ui.theme.fontStyle14Medium
 import com.devcampus.snoozeloo.ui.theme.fontStyle16SemiBold
 import com.devcampus.snoozeloo.ui.theme.fontStyle32Medium
 import com.devcampus.snoozeloo.ui.theme.fontStyle52Medium
-import timber.log.Timber
 import java.util.Calendar
 
 @Composable
 fun AlarmDetailScreen(
     navController: NavController,
-    viewModel: AlarmDetailViewModel = hiltViewModel(),
     alarm: AlarmEntity?,
+    viewModel: AlarmDetailViewModel = hiltViewModel(),
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,21 +88,24 @@ fun AlarmDetailScreen(
                 viewModel.emitEvent(AlarmDetailEvent.ChangeHourEvent(it))
             },
             showDialog = {
-                viewModel.emitEvent(AlarmDetailEvent.ChangeLabelDialogVisibility(true))
+                viewModel.emitEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
             },
             saveClicked = {
-                viewModel.emitEvent(AlarmDetailEvent.SaveAlarm(state.data!!.alarm))
+                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(state.data!!.alarm!!))
+            },
+            closeClicked = {
+                viewModel.emitEvent(NavigationEvent.NavigateBack)
             }
         )
 
         AnimatedVisibility(state.data!!.isDialogVisible) {
             DisplayDialog(
-                label = state.data!!.alarm.label,
+                label = state.data!!.alarm!!.label,
                 saveClicked = { name ->
                     viewModel.emitEvent(AlarmDetailEvent.ChangeAlarmNameEvent(name))
                 },
                 dismiss = {
-                    viewModel.emitEvent(AlarmDetailEvent.ChangeLabelDialogVisibility(false))
+                    viewModel.emitEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(false))
                 }
             )
         }
@@ -111,12 +114,13 @@ fun AlarmDetailScreen(
 
 @Composable
 fun AlarmDetailContent(
-    alarm: AlarmEntity,
+    alarm: AlarmEntity?,
     modifier: Modifier = Modifier,
     changeMinute: (String) -> Unit = { _ -> },
     changeHour: (String) -> Unit = { _ -> },
     showDialog: () -> Unit = {},
     saveClicked: () -> Unit = {},
+    closeClicked: () -> Unit = {},
 ) {
     Column(
         modifier = modifier.padding(16.dp),
@@ -124,7 +128,11 @@ fun AlarmDetailContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        TopBarAlarmDetail()
+        TopBarAlarmDetail(
+            closeClicked = closeClicked,
+            saveClicked = saveClicked
+        )
+
         Box(
             modifier = Modifier
                 .background(
@@ -142,7 +150,7 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding TODO como se puede mejorar esto?
-                        value = alarm.getHour().toString(),
+                        value = alarm!!.getHour().toString(),
                         onValueChange = changeHour,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
@@ -205,7 +213,7 @@ fun AlarmDetailContent(
                     style = fontStyle16SemiBold.copy(color = colorResource(id = R.color.customBlack))
                 )
                 Text(
-                    text = alarm.label,
+                    text = alarm!!.label,
                     modifier = Modifier,
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray))
                 )
@@ -256,22 +264,26 @@ fun DisplayDialog(
 }
 
 @Composable
-fun TopBarAlarmDetail() {
+fun TopBarAlarmDetail(
+    closeClicked: () -> Unit = {},
+    saveClicked: () -> Unit = {},
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "close"
+            contentDescription = "close",
+            modifier = Modifier.clickable {
+                closeClicked()
+            }
         )
         Button(
             modifier = Modifier,
-            onClick = {
-                Timber.d("Turn Off Alarm")
-            }
+            onClick = saveClicked
+
         ) {
             Text(
                 text = "Save",
@@ -299,13 +311,16 @@ fun customColors() = TextFieldDefaults.colors(
 private fun AlarmDetailContentPreview() {
     SnoozelooTheme {
         AlarmDetailContent(
-            alarm = AlarmEntity().copy(
+            alarm = AlarmEntity(
+
                 label = "Alarm 1",
                 time = Calendar.getInstance().apply {
                     time = time
                     set(Calendar.HOUR_OF_DAY, 7)
                     set(Calendar.MINUTE, 30)
-                }.time
+                }.time,
+                repeat = "",
+                enabled = false,
             ),
         )
     }

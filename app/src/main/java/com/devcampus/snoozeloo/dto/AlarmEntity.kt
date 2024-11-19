@@ -1,26 +1,32 @@
 package com.devcampus.snoozeloo.dto
 
-import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 const val TABLE_NAME = "alarms"
 
-@Parcelize
 @Serializable
 @Entity(tableName = TABLE_NAME)
 data class AlarmEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val label: String,
-    @Contextual val time: Date,
+    @Serializable(with = DateSerializer::class)
+    val time: Date,
     val repeat: String,
     val enabled: Boolean,
-) : Parcelable {
+) {
+
     constructor() : this(
         label = "",
         time = Calendar.getInstance().time,
@@ -38,5 +44,22 @@ data class AlarmEntity(
         val calendar = Calendar.getInstance()
         calendar.time = time
         return calendar.get(Calendar.MINUTE)
+    }
+}
+
+
+object DateSerializer : KSerializer<Date> {
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Date", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Date) {
+        val string = dateFormat.format(value)
+        encoder.encodeString(string)
+    }
+
+    override fun deserialize(decoder: Decoder): Date {
+        val string = decoder.decodeString()
+        return dateFormat.parse(string)!!
     }
 }

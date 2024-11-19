@@ -3,6 +3,7 @@ package com.devcampus.snoozeloo.ui.screens.list
 import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +72,7 @@ fun AlarmListScreen(
                 onClick = {
                     viewModel.emitEvent(
                         NavigationEvent.NavigateTo(
-                            route = Destinations.AlarmDetail()
+                            route = Destinations.AlarmDetail(null)
                         )
                     )
                 },
@@ -105,7 +106,17 @@ fun AlarmListScreen(
                     viewModel.emitEvent(
                         AlarmEvents.ToggleAlarmEvent(it)
                     )
-                })
+                },
+                alarmClicked = {
+                    viewModel.emitEvent(
+                        NavigationEvent.NavigateTo(
+                            route = Destinations.AlarmDetail(
+                                alarm = it
+                            )
+                        )
+                    )
+                }
+            )
         } else {
             AlarmListEmptyContent()
         }
@@ -123,6 +134,7 @@ fun AlarmListContent(
     alarms: List<AlarmEntity>,
     modifier: Modifier = Modifier,
     toggleAlarm: (AlarmEntity) -> Unit = {},
+    alarmClicked: (AlarmEntity) -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -139,7 +151,10 @@ fun AlarmListContent(
                 ListItem(
                     modifier = Modifier
                         .padding(vertical = 8.dp)
-                        .clip(MaterialTheme.shapes.large),
+                        .clip(MaterialTheme.shapes.large)
+                        .clickable {
+                            alarmClicked(alarm)
+                        },
                     overlineContent = {
                         Text(
                             text = alarm.label,

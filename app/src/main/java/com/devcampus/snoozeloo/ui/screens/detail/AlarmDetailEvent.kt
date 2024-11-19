@@ -11,6 +11,6 @@ sealed class AlarmDetailEvent : UIEvent {
     data class ChangeHourEvent(val hour: String) : AlarmDetailEvent()
     data class ChangeMinuteEvent(val minute: String) : AlarmDetailEvent()
     data class ChangeAlarmNameEvent(val name: String) : AlarmDetailEvent()
-    data class ChangeLabelDialogVisibility(val isVisible: Boolean) : AlarmDetailEvent()
-    data class SaveAlarm(val alarm: AlarmEntity) : AlarmDetailEvent()
+    data class ChangeLabelDialogVisibilityEvent(val isVisible: Boolean) : AlarmDetailEvent()
+    data class SaveAlarmEvent(val alarm: AlarmEntity) : AlarmDetailEvent()
 }

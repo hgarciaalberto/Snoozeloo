@@ -53,7 +53,7 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
                 }
             }
 
-            is AlarmDetailEvent.ChangeLabelDialogVisibility -> {
+            is AlarmDetailEvent.ChangeLabelDialogVisibilityEvent -> {
                 emitStateCopy {
                     it?.copy(
                         isDialogVisible = event.isVisible
