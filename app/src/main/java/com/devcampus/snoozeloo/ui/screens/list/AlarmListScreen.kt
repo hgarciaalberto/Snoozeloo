@@ -42,8 +42,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
+import com.devcampus.snoozeloo.core.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.core.State.Loading
-import com.devcampus.snoozeloo.core.UIEvent.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.extensions.HandleEvents
 import com.devcampus.snoozeloo.extensions.formatTimeUntil
@@ -56,7 +56,7 @@ import java.util.Locale
 @Composable
 fun AlarmListScreen(
     navController: NavController,
-    viewModel: AlarmListViewModel = hiltViewModel()
+    viewModel: AlarmListViewModel = hiltViewModel(),
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -71,7 +71,7 @@ fun AlarmListScreen(
                 onClick = {
                     viewModel.emitEvent(
                         NavigationEvent.NavigateTo(
-                            route = Destinations.AlarmDetail
+                            route = Destinations.AlarmDetail()
                         )
                     )
                 },

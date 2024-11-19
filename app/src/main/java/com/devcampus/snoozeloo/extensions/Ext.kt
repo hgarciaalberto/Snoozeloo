@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.core.BaseViewModel
+import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.handleEvent
 import java.util.Calendar
@@ -18,7 +19,7 @@ fun <T> BaseViewModel<T>.HandleEvents(navController: NavController) {
 
     LaunchedEffect(key1 = eventsData.key) {
         eventsData.events.forEach { event ->
-            if (event !is UIEvent.CommonUiEvent.Unknown) {
+            if (event !is CommonUiEvent.Unknown) {
                 handleEvent(
                     composeViewModel = this@HandleEvents,
                     navController = navController,
