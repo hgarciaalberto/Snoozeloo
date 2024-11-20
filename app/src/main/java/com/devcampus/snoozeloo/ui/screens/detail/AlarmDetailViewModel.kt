@@ -1,14 +1,22 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
+import android.icu.text.SimpleDateFormat
 import com.devcampus.snoozeloo.core.BaseViewModel
+import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.repository.room.AlarmDao
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
-class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailState>(
+@HiltViewModel
+class AlarmDetailViewModel @Inject constructor(
+    private val alarmDao: AlarmDao
+) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
         data = AlarmDetailState()
@@ -54,7 +62,7 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
 //            }
 
             is AlarmDetailEvent.SaveAlarmEvent -> {
-                emitStateCopy {
+                launch { emitStateCopy {
                     it?.copy(
                         alarm = it.alarm.copy(
                             time = Calendar.getInstance().apply {
@@ -64,6 +72,9 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
                             }.time
                         )
                     )
+                }
+                    addAlarm(alarm = state.value.data?.alarm ?: AlarmEntity())
+                    emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
                 }
             }
 
@@ -87,5 +98,18 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
                 alarm = alarm ?: AlarmEntity()
             )
         }
+    }
+
+    private fun addAlarm(
+        alarm: AlarmEntity
+    ) = launch {
+        alarmDao.insertAlarm(
+            AlarmEntity(
+                label = alarm.label,
+                time = alarm.time,
+                repeat = "Daily",
+                enabled = true
+            )
+        )
     }
 }
