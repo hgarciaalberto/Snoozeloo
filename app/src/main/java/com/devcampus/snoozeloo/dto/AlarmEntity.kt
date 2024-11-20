@@ -47,6 +47,9 @@ data class AlarmEntity(
     }
 }
 
+fun Int.timeFormat(): String =
+    String.format(Locale.getDefault(), "%02d", this)
+
 
 object DateSerializer : KSerializer<Date> {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())

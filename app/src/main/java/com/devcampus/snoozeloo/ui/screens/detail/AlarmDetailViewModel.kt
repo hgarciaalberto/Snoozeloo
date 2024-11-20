@@ -27,26 +27,40 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
                 }
             }
 
-            is AlarmDetailEvent.ChangeMinuteEvent -> {
-                emitStateCopy {
-                    it?.copy(
-                        alarm = it.alarm.copy(
-                            time = Calendar.getInstance().apply {
-                                time = it.alarm.time
-                                set(Calendar.MINUTE, event.minute.toInt())
-                            }.time
-                        )
-                    )
-                }
-            }
+//            is AlarmDetailEvent.ChangeMinuteEvent -> {
+//                emitStateCopy {
+//                    it?.copy(
+//                        alarm = it.alarm.copy(
+//                            time = Calendar.getInstance().apply {
+//                                time = it.alarm.time
+//                                set(Calendar.MINUTE, event.minute.toInt())
+//                            }.time
+//                        )
+//                    )
+//                }
+//            }
+//
+//            is AlarmDetailEvent.ChangeHourEvent -> {
+//                emitStateCopy {
+//                    it?.copy(
+//                        alarm = it.alarm.copy(
+//                            time = Calendar.getInstance().apply {
+//                                time = it.alarm.time
+//                                set(Calendar.MINUTE, event.hour.toInt())
+//                            }.time
+//                        )
+//                    )
+//                }
+//            }
 
-            is AlarmDetailEvent.ChangeHourEvent -> {
+            is AlarmDetailEvent.SaveAlarmEvent -> {
                 emitStateCopy {
                     it?.copy(
                         alarm = it.alarm.copy(
                             time = Calendar.getInstance().apply {
                                 time = it.alarm.time
-                                set(Calendar.MINUTE, event.hour.toInt())
+                                set(Calendar.HOUR_OF_DAY, event.hour.toInt())
+                                set(Calendar.MINUTE, event.minute.toInt())
                             }.time
                         )
                     )
@@ -67,10 +81,10 @@ class AlarmDetailViewModel @Inject constructor() : BaseViewModel<AlarmDetailStat
         }
     }
 
-    fun setupAlarm(entity: AlarmEntity?) {
+    fun setupAlarm(alarm: AlarmEntity?) {
         emitStateCopy {
             it?.copy(
-                alarm = entity ?: AlarmEntity()
+                alarm = alarm ?: AlarmEntity()
             )
         }
     }

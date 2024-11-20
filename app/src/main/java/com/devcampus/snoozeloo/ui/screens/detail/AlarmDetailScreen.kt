@@ -29,6 +29,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,11 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,7 +47,10 @@ import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
 import com.devcampus.snoozeloo.core.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.dto.timeFormat
 import com.devcampus.snoozeloo.extensions.HandleEvents
+import com.devcampus.snoozeloo.extensions.formatTimeUntil
+import com.devcampus.snoozeloo.extensions.nextAlarmDate
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
 import com.devcampus.snoozeloo.ui.theme.fontStyle14Medium
 import com.devcampus.snoozeloo.ui.theme.fontStyle16SemiBold
@@ -81,17 +81,17 @@ fun AlarmDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            changeMinute = {
-                viewModel.emitEvent(AlarmDetailEvent.ChangeMinuteEvent(it))
-            },
-            changeHour = {
-                viewModel.emitEvent(AlarmDetailEvent.ChangeHourEvent(it))
-            },
+//            changeMinute = {
+//                viewModel.handleEvent(AlarmDetailEvent.ChangeMinuteEvent(it))
+//            },
+//            changeHour = {
+//                viewModel.handleEvent(AlarmDetailEvent.ChangeHourEvent(it))
+//            },
             showDialog = {
-                viewModel.emitEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
+                viewModel.handleEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
             },
-            saveClicked = {
-                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(state.data!!.alarm!!))
+            saveClicked = { hour, minute ->
+                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(hour, minute))
             },
             closeClicked = {
                 viewModel.emitEvent(NavigationEvent.NavigateBack)
@@ -100,7 +100,7 @@ fun AlarmDetailScreen(
 
         AnimatedVisibility(state.data!!.isDialogVisible) {
             DisplayDialog(
-                label = state.data!!.alarm!!.label,
+                label = state.data!!.alarm.label,
                 saveClicked = { name ->
                     viewModel.emitEvent(AlarmDetailEvent.ChangeAlarmNameEvent(name))
                 },
@@ -114,14 +114,25 @@ fun AlarmDetailScreen(
 
 @Composable
 fun AlarmDetailContent(
-    alarm: AlarmEntity?,
+    alarm: AlarmEntity,
     modifier: Modifier = Modifier,
     changeMinute: (String) -> Unit = { _ -> },
     changeHour: (String) -> Unit = { _ -> },
     showDialog: () -> Unit = {},
-    saveClicked: () -> Unit = {},
+    saveClicked: (Int, Int) -> Unit = { _, _ -> },
     closeClicked: () -> Unit = {},
 ) {
+
+    var hour by rememberSaveable(alarm) {
+        mutableIntStateOf(alarm.getHour())
+    }
+    var minute by rememberSaveable(alarm) {
+        mutableIntStateOf(alarm.getMinute())
+    }
+
+//    val alarm by remember(alarm) { mutableStateOf(alarm) }
+
+
     Column(
         modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -130,7 +141,9 @@ fun AlarmDetailContent(
 
         TopBarAlarmDetail(
             closeClicked = closeClicked,
-            saveClicked = saveClicked
+            saveClicked = {
+                saveClicked(hour, minute)
+            }
         )
 
         Box(
@@ -146,16 +159,18 @@ fun AlarmDetailContent(
             ) {
                 Row(modifier = Modifier) {
                     TextField(
-                        modifier = Modifier// Add a white border
+                        modifier = Modifier // Add a white border
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding TODO como se puede mejorar esto?
-                        value = alarm!!.getHour().toString(),
-                        onValueChange = changeHour,
+                        value = hour.coerceIn(0, 23).timeFormat(),
+                        onValueChange = {
+                            hour = it.toInt()
+                        },
+//                        visualTransformation = TwoDigitVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
-                        visualTransformation = TwoDigitVisualTransformation(),
                         colors = customColors(),
                         shape = RoundedCornerShape(10.dp),
                         textStyle = fontStyle52Medium.copy(textAlign = TextAlign.Center)
@@ -171,8 +186,10 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding
-                        value = alarm.getMinute().toString(),
-                        onValueChange = changeMinute,
+                        value = minute.coerceIn(0, 59).timeFormat(),
+                        onValueChange = {
+                            minute = it.toInt()
+                        },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
@@ -184,10 +201,12 @@ fun AlarmDetailContent(
                 Text(
                     modifier = Modifier.padding(bottom = 16.dp),
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray)),
-                    text = "Alarm in 7h 34min"
+                    text = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, hour)
+                        set(Calendar.MINUTE, minute)
+                    }.time.nextAlarmDate(useWeekday = false).formatTimeUntil()
                 )
             }
-
         }
 
         Box(
@@ -305,8 +324,7 @@ fun customColors() = TextFieldDefaults.colors(
     cursorColor = colorResource(id = R.color.primary),
 )
 
-
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun AlarmDetailContentPreview() {
     SnoozelooTheme {
@@ -326,10 +344,4 @@ private fun AlarmDetailContentPreview() {
     }
 }
 
-class TwoDigitVisualTransformation : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        val trimmed = if (text.text.length >= 2) text.text.substring(0, 2) else text.text
-        val formatted = trimmed.padStart(2, '0')
-        return TransformedText(AnnotatedString(formatted), OffsetMapping.Identity)
-    }
-}
+
