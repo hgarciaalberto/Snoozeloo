@@ -74,10 +74,13 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     kspTest(libs.hilt.android.compiler)
 
+    // Navigation Kiwi
+    implementation(libs.navigation.kiwi)
+
     // Room
-    implementation (libs.androidx.room.runtime)
-    ksp (libs.androidx.room.compiler)
-    implementation (libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     // KSP
     implementation(libs.ksp.api)

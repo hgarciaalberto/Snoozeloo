@@ -1,12 +1,16 @@
 package com.devcampus.snoozeloo.navigation
 
+import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.kiwi.navigationcompose.typed.Destination
 import kotlinx.serialization.Serializable
 
-sealed interface Destinations {
+sealed interface Destinations : Destination {
 
     @Serializable
     object AlarmList : Destinations
 
     @Serializable
-    object AlarmDetail : Destinations
+    data class AlarmDetail(
+        val alarm: AlarmEntity?,
+    ) : Destinations
 }

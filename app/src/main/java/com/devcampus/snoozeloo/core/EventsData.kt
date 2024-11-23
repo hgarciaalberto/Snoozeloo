@@ -4,5 +4,5 @@ import java.util.UUID
 
 data class EventsData(
     val key : UUID = UUID.randomUUID(),
-    val events: List<UIEvent> = listOf(UIEvent.CommonUiEvent.Unknown)
+    val events: List<UIEvent> = listOf(CommonUiEvent.Unknown)
 )

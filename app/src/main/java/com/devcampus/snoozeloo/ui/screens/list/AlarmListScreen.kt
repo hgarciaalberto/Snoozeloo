@@ -3,6 +3,7 @@ package com.devcampus.snoozeloo.ui.screens.list
 import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,10 +43,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
+import com.devcampus.snoozeloo.core.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.core.State.Loading
-import com.devcampus.snoozeloo.core.UIEvent.CommonUiEvent.NavigationEvent
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.extensions.HandleEvents
+import com.devcampus.snoozeloo.extensions.formatTimeUntil
+import com.devcampus.snoozeloo.extensions.nextAlarmDate
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
@@ -54,7 +57,7 @@ import java.util.Locale
 @Composable
 fun AlarmListScreen(
     navController: NavController,
-    viewModel: AlarmListViewModel = hiltViewModel()
+    viewModel: AlarmListViewModel = hiltViewModel(),
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -69,7 +72,7 @@ fun AlarmListScreen(
                 onClick = {
                     viewModel.emitEvent(
                         NavigationEvent.NavigateTo(
-                            route = Destinations.AlarmDetail
+                            route = Destinations.AlarmDetail(null)
                         )
                     )
                 },
@@ -99,7 +102,20 @@ fun AlarmListScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp),
-                toggleAlarm = viewModel::toggleAlarm
+                toggleAlarm = {
+                    viewModel.emitEvent(
+                        AlarmEvents.ToggleAlarmEvent(it)
+                    )
+                },
+                alarmClicked = {
+                    viewModel.emitEvent(
+                        NavigationEvent.NavigateTo(
+                            route = Destinations.AlarmDetail(
+                                alarm = it
+                            )
+                        )
+                    )
+                }
             )
         } else {
             AlarmListEmptyContent()
@@ -118,6 +134,7 @@ fun AlarmListContent(
     alarms: List<AlarmEntity>,
     modifier: Modifier = Modifier,
     toggleAlarm: (AlarmEntity) -> Unit = {},
+    alarmClicked: (AlarmEntity) -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -128,15 +145,16 @@ fun AlarmListContent(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        LazyColumn(
-
-        ) {
+        LazyColumn {
             items(alarms) { alarm ->
 
                 ListItem(
                     modifier = Modifier
                         .padding(vertical = 8.dp)
-                        .clip(MaterialTheme.shapes.large),
+                        .clip(MaterialTheme.shapes.large)
+                        .clickable {
+                            alarmClicked(alarm)
+                        },
                     overlineContent = {
                         Text(
                             text = alarm.label,
@@ -163,7 +181,7 @@ fun AlarmListContent(
                     },
                     supportingContent = {
                         Text(
-                            text = "Supporting Content",
+                            text = alarm.time.nextAlarmDate(useWeekday = false).formatTimeUntil(),
                             style = MaterialTheme.typography.bodySmall,
                             color = colorResource(id = R.color.disabled)
                         )
