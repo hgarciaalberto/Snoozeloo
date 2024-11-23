@@ -33,6 +33,13 @@ class AlarmDetailViewModel @Inject constructor(
                 }
             }
 
+            is AlarmDetailEvent.DeleteAlarmEvent -> {
+                launch {
+                    alarmDao.deleteAlarm(event.alarm)
+                }
+                emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
+            }
+
 //            is AlarmDetailEvent.ChangeMinuteEvent -> {
 //                emitStateCopy {
 //                    it?.copy(

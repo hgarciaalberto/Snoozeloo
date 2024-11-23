@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,7 +20,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -40,6 +43,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -77,7 +82,7 @@ fun AlarmDetailScreen(
 
     Scaffold { paddingValues ->
         AlarmDetailContent(
-            alarm = state.data!!.alarm,
+            alarm = state.data?.alarm,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
@@ -92,6 +97,9 @@ fun AlarmDetailScreen(
             },
             saveClicked = { hour, minute ->
                 viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(hour, minute))
+            },
+            deleteClicked = {
+                viewModel.emitEvent(AlarmDetailEvent.DeleteAlarmEvent(alarm!!))
             },
             closeClicked = {
                 viewModel.emitEvent(NavigationEvent.NavigateBack)
@@ -114,20 +122,24 @@ fun AlarmDetailScreen(
 
 @Composable
 fun AlarmDetailContent(
-    alarm: AlarmEntity,
+    alarm: AlarmEntity?,
     modifier: Modifier = Modifier,
-    changeMinute: (String) -> Unit = { _ -> },
-    changeHour: (String) -> Unit = { _ -> },
     showDialog: () -> Unit = {},
     saveClicked: (Int, Int) -> Unit = { _, _ -> },
+    deleteClicked: () -> Unit = { },
     closeClicked: () -> Unit = {},
 ) {
 
     var hour by rememberSaveable(alarm) {
-        mutableIntStateOf(alarm.getHour())
+        mutableIntStateOf(
+            alarm?.getHour() ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY).plus(1)
+        )
     }
+
     var minute by rememberSaveable(alarm) {
-        mutableIntStateOf(alarm.getMinute())
+        mutableIntStateOf(
+            alarm?.getMinute() ?: Calendar.getInstance().get(Calendar.MINUTE)
+        )
     }
 
     Column(
@@ -140,7 +152,11 @@ fun AlarmDetailContent(
             closeClicked = closeClicked,
             saveClicked = {
                 saveClicked(hour, minute)
-            }
+            },
+            deleteClicked = {
+                deleteClicked()
+            },
+            isDeleteVisible = alarm != null
         )
 
         Box(
@@ -159,12 +175,11 @@ fun AlarmDetailContent(
                         modifier = Modifier // Add a white border
                             .padding(16.dp)
                             .weight(1f)
-                            .size(width = 128.dp, height = 95.dp), // Add padding TODO como se puede mejorar esto?
+                            .size(width = 128.dp, height = 95.dp),
                         value = hour.coerceIn(0, 23).timeFormat(),
                         onValueChange = {
                             hour = it.toInt()
                         },
-//                        visualTransformation = TwoDigitVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
@@ -229,7 +244,7 @@ fun AlarmDetailContent(
                     style = fontStyle16SemiBold.copy(color = colorResource(id = R.color.customBlack))
                 )
                 Text(
-                    text = alarm!!.label,
+                    text = alarm?.label ?: "",
                     modifier = Modifier,
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray))
                 )
@@ -283,6 +298,8 @@ fun DisplayDialog(
 fun TopBarAlarmDetail(
     closeClicked: () -> Unit = {},
     saveClicked: () -> Unit = {},
+    deleteClicked: () -> Unit = {},
+    isDeleteVisible: Boolean = false,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -296,16 +313,36 @@ fun TopBarAlarmDetail(
                 closeClicked()
             }
         )
-        Button(
-            modifier = Modifier,
-            onClick = saveClicked
+        Row {
+            if (isDeleteVisible) {
+                Button(
+                    modifier = Modifier,
+                    onClick = deleteClicked,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                    )
+                ) {
+                    Text(
+                        text = "Delete",
+                        style = fontStyle16SemiBold,
+                        modifier = Modifier.width(IntrinsicSize.Max),
+                    )
+                }
+            }
 
-        ) {
-            Text(
-                text = "Save",
-                style = fontStyle16SemiBold,
-                modifier = Modifier.width(IntrinsicSize.Max),
-            )
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Button(
+                modifier = Modifier,
+                onClick = saveClicked
+
+            ) {
+                Text(
+                    text = "Save",
+                    style = fontStyle16SemiBold,
+                    modifier = Modifier.width(IntrinsicSize.Max),
+                )
+            }
         }
     }
 }
@@ -323,22 +360,27 @@ fun customColors() = TextFieldDefaults.colors(
 
 @Preview(showBackground = true)
 @Composable
-private fun AlarmDetailContentPreview() {
+private fun AlarmDetailContentPreview(
+    @PreviewParameter(AlarmEntityPreviewProvider::class) alarm: AlarmEntity,
+) {
     SnoozelooTheme {
         AlarmDetailContent(
-            alarm = AlarmEntity(
-
-                label = "Alarm 1",
-                time = Calendar.getInstance().apply {
-                    time = time
-                    set(Calendar.HOUR_OF_DAY, 7)
-                    set(Calendar.MINUTE, 30)
-                }.time,
-                repeat = "",
-                enabled = false,
-            ),
+            alarm = alarm,
         )
     }
 }
 
-
+class AlarmEntityPreviewProvider : PreviewParameterProvider<AlarmEntity?> {
+    override val values: Sequence<AlarmEntity?> = sequenceOf(
+        AlarmEntity(
+            label = "Alarm 1",
+            time = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 7)
+                set(Calendar.MINUTE, 30)
+            }.time,
+            repeat = "",
+            enabled = false
+        ),
+        null
+    )
+}
