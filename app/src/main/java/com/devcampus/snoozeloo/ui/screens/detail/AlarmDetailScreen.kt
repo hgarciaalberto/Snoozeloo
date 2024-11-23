@@ -108,7 +108,7 @@ fun AlarmDetailScreen(
 
         AnimatedVisibility(state.data!!.isDialogVisible) {
             DisplayDialog(
-                label = state.data!!.alarm.label,
+                label = state.data?.alarm?.label ?: "",
                 saveClicked = { name ->
                     viewModel.emitEvent(AlarmDetailEvent.ChangeAlarmNameEvent(name))
                 },
