@@ -1,6 +1,9 @@
 package com.devcampus.snoozeloo.ui.screens.list
 
 import android.icu.text.SimpleDateFormat
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,12 +30,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +61,7 @@ import com.devcampus.snoozeloo.extensions.nextAlarmDate
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
@@ -61,10 +71,20 @@ fun AlarmListScreen(
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var uri : Uri?  by remember {
+        mutableStateOf(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+    }
 
     viewModel.run {
         HandleEvents(navController)
     }
+
+    LaunchedEffect(key1 = true) {
+        delay(10000)
+        uri = null
+    }
+
+    AlarmSoundPlayer(alarmUri = uri)
 
     Scaffold(
         floatingActionButton = {
@@ -125,6 +145,34 @@ fun AlarmListScreen(
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
             }
+        }
+    }
+}
+
+
+@Composable
+fun AlarmSoundPlayer(alarmUri: Uri?) {
+    val context = LocalContext.current
+    var mediaPlayer: MediaPlayer? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(alarmUri) {
+        if (alarmUri != null) {
+            mediaPlayer = MediaPlayer.create(context, alarmUri).apply {
+                isLooping = true // Set looping for continuous alarm sound
+                start()
+            }
+        } else {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
         }
     }
 }
