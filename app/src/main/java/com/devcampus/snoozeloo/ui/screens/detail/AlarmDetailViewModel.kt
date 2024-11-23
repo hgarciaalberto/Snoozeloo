@@ -17,7 +17,7 @@ class AlarmDetailViewModel @Inject constructor(
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
-        data = AlarmDetailState()
+        data = AlarmDetailState(alarm = null)
     )
 ) {
 
@@ -26,11 +26,18 @@ class AlarmDetailViewModel @Inject constructor(
             is AlarmDetailEvent.ChangeAlarmNameEvent -> {
                 emitStateCopy {
                     it?.copy(
-                        alarm = it.alarm.copy(
+                        alarm = it.alarm?.copy(
                             label = event.name
                         )
                     )
                 }
+            }
+
+            is AlarmDetailEvent.DeleteAlarmEvent -> {
+                launch {
+                    alarmDao.deleteAlarm(event.alarm)
+                }
+                emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
 
 //            is AlarmDetailEvent.ChangeMinuteEvent -> {
@@ -63,7 +70,7 @@ class AlarmDetailViewModel @Inject constructor(
                 launch {
                     emitStateCopySuspend {
                         it?.copy(
-                            alarm = it.alarm.copy(
+                            alarm = it.alarm?.copy(
                                 time = Calendar.getInstance().apply {
                                     time = it.alarm.time
                                     set(Calendar.HOUR_OF_DAY, event.hour.toInt())
@@ -94,7 +101,7 @@ class AlarmDetailViewModel @Inject constructor(
     fun setupAlarm(alarm: AlarmEntity?) {
         emitStateCopy {
             it?.copy(
-                alarm = alarm ?: AlarmEntity()
+                alarm = alarm
             )
         }
     }
