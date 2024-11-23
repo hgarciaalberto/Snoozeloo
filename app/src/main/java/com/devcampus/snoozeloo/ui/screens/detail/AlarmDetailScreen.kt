@@ -130,9 +130,6 @@ fun AlarmDetailContent(
         mutableIntStateOf(alarm.getMinute())
     }
 
-//    val alarm by remember(alarm) { mutableStateOf(alarm) }
-
-
     Column(
         modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),

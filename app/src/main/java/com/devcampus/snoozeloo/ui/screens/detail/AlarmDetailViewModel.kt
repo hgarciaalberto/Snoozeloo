@@ -1,6 +1,5 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
-import android.icu.text.SimpleDateFormat
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
@@ -10,12 +9,11 @@ import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.repository.room.AlarmDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class AlarmDetailViewModel @Inject constructor(
-    private val alarmDao: AlarmDao
+    private val alarmDao: AlarmDao,
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
@@ -62,17 +60,18 @@ class AlarmDetailViewModel @Inject constructor(
 //            }
 
             is AlarmDetailEvent.SaveAlarmEvent -> {
-                launch { emitStateCopy {
-                    it?.copy(
-                        alarm = it.alarm.copy(
-                            time = Calendar.getInstance().apply {
-                                time = it.alarm.time
-                                set(Calendar.HOUR_OF_DAY, event.hour.toInt())
-                                set(Calendar.MINUTE, event.minute.toInt())
-                            }.time
+                launch {
+                    emitStateCopySuspend {
+                        it?.copy(
+                            alarm = it.alarm.copy(
+                                time = Calendar.getInstance().apply {
+                                    time = it.alarm.time
+                                    set(Calendar.HOUR_OF_DAY, event.hour.toInt())
+                                    set(Calendar.MINUTE, event.minute.toInt())
+                                }.time
+                            )
                         )
-                    )
-                }
+                    }
                     addAlarm(alarm = state.value.data?.alarm ?: AlarmEntity())
                     emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
                 }
@@ -100,16 +99,12 @@ class AlarmDetailViewModel @Inject constructor(
         }
     }
 
-    private fun addAlarm(
-        alarm: AlarmEntity
-    ) = launch {
-        alarmDao.insertAlarm(
-            AlarmEntity(
-                label = alarm.label,
-                time = alarm.time,
-                repeat = "Daily",
-                enabled = true
-            )
+    private suspend fun addAlarm(alarm: AlarmEntity) = alarmDao.insertAlarm(
+        AlarmEntity(
+            label = alarm.label,
+            time = alarm.time,
+            repeat = "Daily",
+            enabled = true
         )
-    }
+    )
 }

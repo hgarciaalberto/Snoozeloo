@@ -14,7 +14,7 @@ import java.util.UUID
 
 abstract class BaseViewModel<T>(
     defaultState: UiState<T> = UiState(state = State.Loading(), data = null),
-    val coroutineDispatcher: CoroutineDispatcher? = Dispatchers.IO
+    val coroutineDispatcher: CoroutineDispatcher? = Dispatchers.IO,
 ) : ViewModel() {
 
     val state: StateFlow<UiState<T>>
@@ -48,16 +48,16 @@ abstract class BaseViewModel<T>(
     )
 
     fun emitState(
-        state: UiState<T>
+        state: UiState<T>,
     ) = launch { emitStateSuspend(state) }
 
     suspend fun emitStateSuspend(
-        state: UiState<T>
+        state: UiState<T>,
     ) = this.state.emit(state)
 
     suspend fun emitStateCopySuspend(
         newState: State = State.Success,
-        data: (T?) -> T? = { state.value.data }
+        data: (T?) -> T? = { state.value.data },
     ) = state.emit(
         UiState(
             state = newState,
@@ -67,13 +67,14 @@ abstract class BaseViewModel<T>(
 
     fun emitStateCopy(
         newState: State = State.Success,
-        data: (T?) -> T? = { null }
-    ) = launch { emitStateCopySuspend(newState, data) }
+        data: (T?) -> T? = { null },
+    )
 
 
-    fun emitEvent(vararg event: UIEvent) = launch { emitEventSuspend(*event) }
+    = launch { emitStateCopySuspend(newState, data) }
 
-    fun emitEventSuspend(vararg event: UIEvent) {
+
+    fun emitEvent(vararg event: UIEvent) {
         events.update {
             it.copy(
                 events = it.events.plus(event.toList()),
