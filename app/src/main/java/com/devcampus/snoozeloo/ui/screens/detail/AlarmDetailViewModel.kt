@@ -1,5 +1,10 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import com.devcampus.snoozeloo.MainActivity
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
@@ -17,7 +22,7 @@ class AlarmDetailViewModel @Inject constructor(
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
-        data = AlarmDetailState(alarm = null)
+        data = AlarmDetailState()
     )
 ) {
 
@@ -26,9 +31,7 @@ class AlarmDetailViewModel @Inject constructor(
             is AlarmDetailEvent.ChangeAlarmNameEvent -> {
                 emitStateCopy {
                     it?.copy(
-                        alarm = it.alarm?.copy(
-                            label = event.name
-                        )
+                        label = event.label
                     )
                 }
             }
@@ -40,48 +43,17 @@ class AlarmDetailViewModel @Inject constructor(
                 emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
 
-//            is AlarmDetailEvent.ChangeMinuteEvent -> {
-//                emitStateCopy {
-//                    it?.copy(
-//                        alarm = it.alarm.copy(
-//                            time = Calendar.getInstance().apply {
-//                                time = it.alarm.time
-//                                set(Calendar.MINUTE, event.minute.toInt())
-//                            }.time
-//                        )
-//                    )
-//                }
-//            }
-//
-//            is AlarmDetailEvent.ChangeHourEvent -> {
-//                emitStateCopy {
-//                    it?.copy(
-//                        alarm = it.alarm.copy(
-//                            time = Calendar.getInstance().apply {
-//                                time = it.alarm.time
-//                                set(Calendar.MINUTE, event.hour.toInt())
-//                            }.time
-//                        )
-//                    )
-//                }
-//            }
 
             is AlarmDetailEvent.SaveAlarmEvent -> {
                 launch {
-                    emitStateCopySuspend {
-                        it?.copy(
-                            alarm = it.alarm?.copy(
-                                time = Calendar.getInstance().apply {
-                                    time = it.alarm.time
-                                    set(Calendar.HOUR_OF_DAY, event.hour.toInt())
-                                    set(Calendar.MINUTE, event.minute.toInt())
-                                }.time
-                            )
-                        )
-                    }
-                    addAlarm(alarm = state.value.data?.alarm ?: AlarmEntity())
-                    emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
+                    val alarm = addAlarm(
+                        hour = event.hour,
+                        minute = event.minute,
+                        label = state.value.data?.label ?: ""
+                    )
+                    setAlarmInSystem(event.context, alarm)
                 }
+                emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
 
             is AlarmDetailEvent.ChangeLabelDialogVisibilityEvent -> {
@@ -98,20 +70,53 @@ class AlarmDetailViewModel @Inject constructor(
         }
     }
 
+    fun setAlarmInSystem(context: Context, alarm: AlarmEntity?) {
+        if (alarm == null) return
+
+        var alarmMgr: AlarmManager? = null
+
+        alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmIntent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("alarm", alarm)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            alarmIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmMgr.set(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            alarm.time.time,
+            pendingIntent
+        )
+    }
+
     fun setupAlarm(alarm: AlarmEntity?) {
         emitStateCopy {
             it?.copy(
-                alarm = alarm
+                label = alarm?.label,
             )
         }
     }
 
-    private suspend fun addAlarm(alarm: AlarmEntity) = alarmDao.insertAlarm(
-        AlarmEntity(
-            label = alarm.label,
-            time = alarm.time,
-            repeat = "Daily",
-            enabled = true
+    private suspend fun addAlarm(hour: Int, minute: Int, label: String): AlarmEntity? {
+
+        val alarm = AlarmEntity(
+            label = label,
+            time = Calendar.getInstance().apply {
+                time = time
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+            }.time,
+            repeat = "",
+            enabled = true,
         )
-    )
+
+        alarmDao.insertAlarm(alarm)
+
+        return alarm
+    }
 }

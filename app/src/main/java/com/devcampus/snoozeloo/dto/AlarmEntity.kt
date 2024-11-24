@@ -1,7 +1,9 @@
 package com.devcampus.snoozeloo.dto
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -17,6 +19,7 @@ import java.util.Locale
 const val TABLE_NAME = "alarms"
 
 @Serializable
+@Parcelize
 @Entity(tableName = TABLE_NAME)
 data class AlarmEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
@@ -25,7 +28,7 @@ data class AlarmEntity(
     val time: Date,
     val repeat: String,
     val enabled: Boolean,
-) {
+) : Parcelable {
 
     constructor() : this(
         label = "",

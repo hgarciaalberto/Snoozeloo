@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -69,7 +70,7 @@ fun AlarmDetailScreen(
     alarm: AlarmEntity?,
     viewModel: AlarmDetailViewModel = hiltViewModel(),
 ) {
-
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     viewModel.run {
@@ -82,7 +83,10 @@ fun AlarmDetailScreen(
 
     Scaffold { paddingValues ->
         AlarmDetailContent(
-            alarm = state.data?.alarm,
+            hour = alarm?.getHour() ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+            minute = alarm?.getMinute() ?: Calendar.getInstance().get(Calendar.MINUTE),
+            label = alarm?.label ?: "",
+            isDeleteVisible = alarm != null,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
@@ -96,7 +100,7 @@ fun AlarmDetailScreen(
                 viewModel.handleEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
             },
             saveClicked = { hour, minute ->
-                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(hour, minute))
+                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(context, hour, minute))
             },
             deleteClicked = {
                 viewModel.emitEvent(AlarmDetailEvent.DeleteAlarmEvent(alarm!!))
@@ -108,7 +112,7 @@ fun AlarmDetailScreen(
 
         AnimatedVisibility(state.data!!.isDialogVisible) {
             DisplayDialog(
-                label = state.data?.alarm?.label ?: "",
+                label = state.data?.label ?: "",
                 saveClicked = { name ->
                     viewModel.emitEvent(AlarmDetailEvent.ChangeAlarmNameEvent(name))
                 },
@@ -122,25 +126,19 @@ fun AlarmDetailScreen(
 
 @Composable
 fun AlarmDetailContent(
-    alarm: AlarmEntity?,
+    hour: Int,
+    minute: Int,
+    label: String,
     modifier: Modifier = Modifier,
+    isDeleteVisible: Boolean = false,
     showDialog: () -> Unit = {},
     saveClicked: (Int, Int) -> Unit = { _, _ -> },
     deleteClicked: () -> Unit = { },
     closeClicked: () -> Unit = {},
 ) {
 
-    var hour by rememberSaveable(alarm) {
-        mutableIntStateOf(
-            alarm?.getHour() ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY).plus(1)
-        )
-    }
-
-    var minute by rememberSaveable(alarm) {
-        mutableIntStateOf(
-            alarm?.getMinute() ?: Calendar.getInstance().get(Calendar.MINUTE)
-        )
-    }
+    var valueHour by rememberSaveable(hour) { mutableIntStateOf(hour) }
+    var valueMinute by rememberSaveable(minute) { mutableIntStateOf(minute) }
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -151,12 +149,12 @@ fun AlarmDetailContent(
         TopBarAlarmDetail(
             closeClicked = closeClicked,
             saveClicked = {
-                saveClicked(hour, minute)
+                saveClicked(valueHour, valueMinute)
             },
             deleteClicked = {
                 deleteClicked()
             },
-            isDeleteVisible = alarm != null
+            isDeleteVisible = isDeleteVisible
         )
 
         Box(
@@ -176,9 +174,9 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp),
-                        value = hour.coerceIn(0, 23).timeFormat(),
+                        value = valueHour.coerceIn(0, 23).timeFormat(),
                         onValueChange = {
-                            hour = it.toInt()
+                            valueHour = it.toInt()
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
@@ -198,9 +196,9 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding
-                        value = minute.coerceIn(0, 59).timeFormat(),
+                        value = valueMinute.coerceIn(0, 59).timeFormat(),
                         onValueChange = {
-                            minute = it.toInt()
+                            valueMinute = it.toInt()
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
@@ -214,8 +212,8 @@ fun AlarmDetailContent(
                     modifier = Modifier.padding(bottom = 16.dp),
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray)),
                     text = Calendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, hour)
-                        set(Calendar.MINUTE, minute)
+                        set(Calendar.HOUR_OF_DAY, valueHour)
+                        set(Calendar.MINUTE, valueMinute)
                     }.time.nextAlarmDate(useWeekday = false).formatTimeUntil()
                 )
             }
@@ -244,7 +242,7 @@ fun AlarmDetailContent(
                     style = fontStyle16SemiBold.copy(color = colorResource(id = R.color.customBlack))
                 )
                 Text(
-                    text = alarm?.label ?: "",
+                    text = label,
                     modifier = Modifier,
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray))
                 )
@@ -361,26 +359,18 @@ fun customColors() = TextFieldDefaults.colors(
 @Preview(showBackground = true)
 @Composable
 private fun AlarmDetailContentPreview(
-    @PreviewParameter(AlarmEntityPreviewProvider::class) alarm: AlarmEntity,
+    @PreviewParameter(AlarmDetailContentPreviewProvider::class) param: Boolean,
 ) {
     SnoozelooTheme {
         AlarmDetailContent(
-            alarm = alarm,
+            hour = 12,
+            minute = 8,
+            label = "Label",
+            isDeleteVisible = param
         )
     }
 }
 
-class AlarmEntityPreviewProvider : PreviewParameterProvider<AlarmEntity?> {
-    override val values: Sequence<AlarmEntity?> = sequenceOf(
-        AlarmEntity(
-            label = "Alarm 1",
-            time = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 7)
-                set(Calendar.MINUTE, 30)
-            }.time,
-            repeat = "",
-            enabled = false
-        ),
-        null
-    )
+class AlarmDetailContentPreviewProvider : PreviewParameterProvider<Boolean> {
+    override val values: Sequence<Boolean> = sequenceOf(true, false)
 }
