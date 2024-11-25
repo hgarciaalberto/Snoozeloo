@@ -16,6 +16,7 @@ sealed class AlarmDetailEvent : UIEvent {
     data class ChangeLabelDialogVisibilityEvent(val isVisible: Boolean) : AlarmDetailEvent()
     data class SaveAlarmEvent(
         val context: Context,
+        val alarm: AlarmEntity?,
         val hour: Int,
         val minute: Int,
     ) : AlarmDetailEvent()

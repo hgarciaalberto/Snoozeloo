@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.navigation.AppNavigation
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.primary,
                 ) {
-                    AppNavigation()
+                    AppNavigation(intent.extras?.getParcelable<AlarmEntity>("alarm"))
                 }
             }
         }

@@ -4,15 +4,17 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.devcampus.snoozeloo.MainActivity
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.receivers.AlarmReceiver
 import com.devcampus.snoozeloo.repository.room.AlarmDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -31,7 +33,8 @@ class AlarmDetailViewModel @Inject constructor(
             is AlarmDetailEvent.ChangeAlarmNameEvent -> {
                 emitStateCopy {
                     it?.copy(
-                        label = event.label
+                        label = event.label,
+                        isDialogVisible = false
                     )
                 }
             }
@@ -47,6 +50,7 @@ class AlarmDetailViewModel @Inject constructor(
             is AlarmDetailEvent.SaveAlarmEvent -> {
                 launch {
                     val alarm = addAlarm(
+                        alarmId = event.alarm?.id ?: -1,
                         hour = event.hour,
                         minute = event.minute,
                         label = state.value.data?.label ?: ""
@@ -76,20 +80,26 @@ class AlarmDetailViewModel @Inject constructor(
         var alarmMgr: AlarmManager? = null
 
         alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(context, AlarmReceiver::class.java).apply {
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("alarm", alarm)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            0,
-            alarmIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            alarm.id, // Use same id that is used to schedule the alarm to cancel it
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        alarmMgr.set(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            alarm.time.time,
+        Timber.tag("alarm").d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
+        alarmMgr.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            alarm.time.time.minus(
+                Calendar.getInstance().apply {
+                    set(Calendar.SECOND, 0)
+                }.timeInMillis
+            ),
+            AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
     }
@@ -102,20 +112,32 @@ class AlarmDetailViewModel @Inject constructor(
         }
     }
 
-    private suspend fun addAlarm(hour: Int, minute: Int, label: String): AlarmEntity? {
+    private suspend fun addAlarm(alarmId: Int, hour: Int, minute: Int, label: String): AlarmEntity? {
 
         val alarm = AlarmEntity(
+            id = alarmId,
             label = label,
             time = Calendar.getInstance().apply {
                 time = time
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
             }.time,
             repeat = "",
             enabled = true,
         )
 
-        alarmDao.insertAlarm(alarm)
+        // Check the id of the alarm already exists in the database to insert or update the alarm
+        val existingAlarm = alarmDao.getAlarmById(alarm.id).firstOrNull()
+        if (existingAlarm != null) {
+            // Update the existing alarm
+            Timber.d("Updating alarm: $alarm")
+            alarmDao.updateAlarm(alarm)
+        } else {
+            // Insert the new alarm
+            Timber.d("Inserting alarm: $alarm")
+            alarmDao.insertAlarm(alarm)
+        }
 
         return alarm
     }

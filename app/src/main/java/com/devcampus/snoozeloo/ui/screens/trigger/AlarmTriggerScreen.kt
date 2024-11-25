@@ -1,5 +1,6 @@
 package com.devcampus.snoozeloo.ui.screens.trigger
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +35,7 @@ import androidx.navigation.NavController
 import com.devcampus.snoozeloo.R
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.extensions.HandleEvents
+import com.devcampus.snoozeloo.ui.screens.trigger.AlarmTriggerViewModel.Companion.URI_RINGTONE
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -41,17 +49,42 @@ fun AlarmTriggerScreen(
     viewModel: AlarmTriggerViewModel = hiltViewModel(),
 ) {
 
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var mediaPlayer: MediaPlayer? by remember { mutableStateOf(null) }
 
     viewModel.run {
         HandleEvents(navController)
     }
 
+    LaunchedEffect(state) {
+        Timber.d("Alarm is on in LaunchedEffect: ${state.data?.isAlarmOn}")
+        if (state.data?.isAlarmOn == true) {
+            mediaPlayer = MediaPlayer.create(context, URI_RINGTONE).apply {
+                isLooping = true // Set looping for continuous alarm sound
+                start()
+            }
+        } else {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
     AlarmTriggerContent(
         alarm = alarm,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
+        turnOffClicked = {
+            viewModel.handleEvent(TriggerAlarmEvents.SetupAlarm(false))
+        }
     )
 }
 
@@ -59,6 +92,7 @@ fun AlarmTriggerScreen(
 fun AlarmTriggerContent(
     alarm: AlarmEntity,
     modifier: Modifier = Modifier,
+    turnOffClicked: () -> Unit = {},
 ) {
     Column(
         modifier = modifier,
@@ -98,9 +132,7 @@ fun AlarmTriggerContent(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .padding(vertical = 8.dp),
-            onClick = {
-                Timber.d("Turn Off Alarm")
-            }
+            onClick = turnOffClicked,
         ) {
             Text(
                 text = "Turn Off",

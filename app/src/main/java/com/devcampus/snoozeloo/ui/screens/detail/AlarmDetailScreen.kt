@@ -85,7 +85,7 @@ fun AlarmDetailScreen(
         AlarmDetailContent(
             hour = alarm?.getHour() ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
             minute = alarm?.getMinute() ?: Calendar.getInstance().get(Calendar.MINUTE),
-            label = alarm?.label ?: "",
+            label = state.data?.label ?: "",
             isDeleteVisible = alarm != null,
             modifier = Modifier
                 .fillMaxSize()
@@ -100,7 +100,7 @@ fun AlarmDetailScreen(
                 viewModel.handleEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
             },
             saveClicked = { hour, minute ->
-                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(context, hour, minute))
+                viewModel.emitEvent(AlarmDetailEvent.SaveAlarmEvent(context, alarm, hour, minute))
             },
             deleteClicked = {
                 viewModel.emitEvent(AlarmDetailEvent.DeleteAlarmEvent(alarm!!))

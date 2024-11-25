@@ -29,7 +29,6 @@ class AlarmListViewModel @Inject constructor(
             is AlarmEvents.ToggleAlarmEvent -> toggleAlarm(event.alarm)
             else -> super.handleEvent(event)
         }
-
     }
 
     init {
@@ -42,15 +41,6 @@ class AlarmListViewModel @Inject constructor(
             }
         }
     }
-
-//    override fun handleEvent(event: UIEvent) {
-//        when(event){
-//            is AlarmEvents.ToggleAlarmEvent -> {
-//                toggleAlarm(event.alarm)
-//            }
-//            else -> super.handleEvent(event)
-//        }
-//    }
 
     fun toggleAlarm(alarm: AlarmEntity) = launch {
         emitStateCopySuspend(newState = Loading())

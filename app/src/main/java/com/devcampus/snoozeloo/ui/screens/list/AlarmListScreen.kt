@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,12 +59,26 @@ import java.util.Locale
 fun AlarmListScreen(
     navController: NavController,
     viewModel: AlarmListViewModel = hiltViewModel(),
+    alarm: AlarmEntity? = null,
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     viewModel.run {
         HandleEvents(navController)
+    }
+
+    // This is executed when we arrive at this screen with an alarm that comes from the notification
+    LaunchedEffect(true) {
+        alarm?.let {
+            viewModel.emitEvent(
+                NavigationEvent.NavigateTo(
+                    route = Destinations.AlarmTrigger(
+                        alarm = it
+                    )
+                )
+            )
+        }
     }
 
     Scaffold(
