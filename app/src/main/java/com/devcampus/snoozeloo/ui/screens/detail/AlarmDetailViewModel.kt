@@ -114,8 +114,7 @@ class AlarmDetailViewModel @Inject constructor(
 
     private suspend fun addAlarm(alarmId: Int, hour: Int, minute: Int, label: String): AlarmEntity? {
 
-        val alarm = AlarmEntity(
-            id = alarmId,
+        var alarm = AlarmEntity(
             label = label,
             time = Calendar.getInstance().apply {
                 time = time
@@ -127,16 +126,23 @@ class AlarmDetailViewModel @Inject constructor(
             enabled = true,
         )
 
+        // Set up the id only if it is != -1 (existing alarm)
+        if (alarmId > 0) {
+            alarm = alarm.copy(id = alarmId)
+        }
+
         // Check the id of the alarm already exists in the database to insert or update the alarm
         val existingAlarm = alarmDao.getAlarmById(alarm.id).firstOrNull()
-        if (existingAlarm != null) {
+       if (existingAlarm == null || existingAlarm.id == -1) {
+            // Insert the new alarm
+            Timber.d("Inserting alarm: $alarm")
+            alarmDao.insertAlarm(alarm).also { newId ->
+                alarm = alarm.copy(id = newId.toInt()) // Set up the id of the new alarm
+            }
+        } else {
             // Update the existing alarm
             Timber.d("Updating alarm: $alarm")
             alarmDao.updateAlarm(alarm)
-        } else {
-            // Insert the new alarm
-            Timber.d("Inserting alarm: $alarm")
-            alarmDao.insertAlarm(alarm)
         }
 
         return alarm
