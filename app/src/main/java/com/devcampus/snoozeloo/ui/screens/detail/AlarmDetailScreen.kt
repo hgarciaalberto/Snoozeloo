@@ -32,8 +32,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,7 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -137,8 +139,8 @@ fun AlarmDetailContent(
     closeClicked: () -> Unit = {},
 ) {
 
-    var valueHour by rememberSaveable(hour) { mutableIntStateOf(hour) }
-    var valueMinute by rememberSaveable(minute) { mutableIntStateOf(minute) }
+    var valueHour by remember { mutableStateOf(TextFieldValue(hour.timeFormat())) }
+    var valueMinute by remember { mutableStateOf(TextFieldValue(minute.timeFormat())) }
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -149,7 +151,7 @@ fun AlarmDetailContent(
         TopBarAlarmDetail(
             closeClicked = closeClicked,
             saveClicked = {
-                saveClicked(valueHour, valueMinute)
+                saveClicked(valueHour.text.toInt(), valueMinute.text.toInt())
             },
             deleteClicked = {
                 deleteClicked()
@@ -174,9 +176,10 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp),
-                        value = valueHour.coerceIn(0, 23).timeFormat(),
+                        value = valueHour,
                         onValueChange = {
-                            valueHour = it.toInt()
+                            val newValue = it.text.toIntOrNull()?.coerceIn(0, 23)?.timeFormat() ?: valueHour.text
+                            valueHour = TextFieldValue(newValue, TextRange(newValue.length))
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
@@ -196,9 +199,10 @@ fun AlarmDetailContent(
                             .padding(16.dp)
                             .weight(1f)
                             .size(width = 128.dp, height = 95.dp), // Add padding
-                        value = valueMinute.coerceIn(0, 59).timeFormat(),
+                        value = valueMinute,
                         onValueChange = {
-                            valueMinute = it.toInt()
+                            val newValue = it.text.toIntOrNull()?.coerceIn(0, 59)?.timeFormat() ?: valueMinute.text
+                            valueMinute = TextFieldValue(newValue, TextRange(newValue.length))
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
@@ -212,8 +216,8 @@ fun AlarmDetailContent(
                     modifier = Modifier.padding(bottom = 16.dp),
                     style = fontStyle14Medium.copy(color = colorResource(id = R.color.moreGray)),
                     text = Calendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, valueHour)
-                        set(Calendar.MINUTE, valueMinute)
+                        set(Calendar.HOUR_OF_DAY, valueHour.text.toInt())
+                        set(Calendar.MINUTE, valueMinute.text.toInt())
                     }.time.nextAlarmDate(useWeekday = false).formatTimeUntil()
                 )
             }
