@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.devcampus.snoozeloo.SetAlarmUseCase
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AlarmDetailViewModel @Inject constructor(
     private val alarmDao: AlarmDao,
+    private val setAlarmUseCase: SetAlarmUseCase
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
@@ -55,7 +57,8 @@ class AlarmDetailViewModel @Inject constructor(
                         minute = event.minute,
                         label = state.value.data?.label ?: ""
                     )
-                    setAlarmInSystem(event.context, alarm)
+                    setAlarmUseCase(alarm)
+                    //setAlarmInSystem(event.context, alarm)
                 }
                 emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
