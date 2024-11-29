@@ -53,6 +53,7 @@ import com.devcampus.snoozeloo.extensions.nextAlarmDate
 import com.devcampus.snoozeloo.navigation.Destinations
 import com.devcampus.snoozeloo.ui.screens.list.AlarmListViewModel.Companion.FAKE_ALARMS
 import com.devcampus.snoozeloo.ui.theme.SnoozelooTheme
+import java.util.Calendar
 import java.util.Locale
 
 @Composable
@@ -196,7 +197,10 @@ fun AlarmListContent(
                     },
                     supportingContent = {
                         Text(
-                            text = alarm.time.nextAlarmDate(useWeekday = false).formatTimeUntil(),
+                            text = Calendar.getInstance().apply {
+                                set(Calendar.HOUR_OF_DAY, alarm.getHour().toInt())
+                                set(Calendar.MINUTE, alarm.getMinute().toInt())
+                            }.time.nextAlarmDate(useWeekday = false).formatTimeUntil(),
                             style = MaterialTheme.typography.bodySmall,
                             color = colorResource(id = R.color.disabled)
                         )

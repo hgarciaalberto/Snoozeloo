@@ -1,29 +1,27 @@
 package com.devcampus.snoozeloo.ui.screens.list
 
 import android.annotation.SuppressLint
-import android.icu.text.SimpleDateFormat
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.State.Loading
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
 import com.devcampus.snoozeloo.repository.room.AlarmDao
+import com.devcampus.snoozeloo.usecases.SetAlarmUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import java.util.Calendar
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class AlarmListViewModel @Inject constructor(
-    private val alarmDao: AlarmDao
+    private val alarmDao: AlarmDao,
+    private val setAlarmUseCase: SetAlarmUseCase,
 ) : BaseViewModel<AlarmListViewModel.AlarmListState>(
     defaultState = UiState(
         state = Loading(),
         data = AlarmListState()
     )
 ) {
-
     override fun handleEvent(event: UIEvent) {
         when (event) {
             is AlarmEvents.ToggleAlarmEvent -> toggleAlarm(event.alarm)
@@ -44,23 +42,23 @@ class AlarmListViewModel @Inject constructor(
 
     fun toggleAlarm(alarm: AlarmEntity) = launch {
         emitStateCopySuspend(newState = Loading())
-        delay(700) // Just for testing purposes
+
         val updatedAlarm = alarm.copy(enabled = !alarm.enabled)
         alarmDao.updateAlarm(updatedAlarm)
-    }
 
-    fun addAlarm() = launch {
-        alarmDao.insertAlarm(
-            AlarmEntity().copy(
-                label = "Go to bed",
-                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).parse("08:00 PM")!!,
-                enabled = true,
-            )
-        )
+        if (updatedAlarm.enabled) {
+            setAlarmUseCase(updatedAlarm) // Setup the alarm if it is enabled
+        } else {
+            setAlarmUseCase.cancelAlarm(updatedAlarm) // Cancel the alarm if it is disabled
+        }
+
+        emitStateCopySuspend {
+            it?.copy(alarms = state.value.data?.alarms ?: emptyList())
+        }
     }
 
     data class AlarmListState(
-        val alarms: List<AlarmEntity> = emptyList<AlarmEntity>()
+        val alarms: List<AlarmEntity> = emptyList<AlarmEntity>(),
     )
 
     companion object {
@@ -85,7 +83,7 @@ class AlarmListViewModel @Inject constructor(
             AlarmEntity().copy(
                 id = 1,
                 label = "Go to bed",
-                time = Calendar.getInstance().apply{
+                time = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 11)
                     set(Calendar.MINUTE, 0)
                     set(Calendar.SECOND, 0)
@@ -95,7 +93,7 @@ class AlarmListViewModel @Inject constructor(
             AlarmEntity().copy(
                 id = 2,
                 label = "Education",
-                time = Calendar.getInstance().apply{
+                time = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 2)
                     set(Calendar.MINUTE, 30)
                     set(Calendar.SECOND, 0)
@@ -105,7 +103,7 @@ class AlarmListViewModel @Inject constructor(
             AlarmEntity().copy(
                 id = 3,
                 label = "Dinner",
-                time = Calendar.getInstance().apply{
+                time = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 13)
                     set(Calendar.MINUTE, 45)
                     set(Calendar.SECOND, 0)

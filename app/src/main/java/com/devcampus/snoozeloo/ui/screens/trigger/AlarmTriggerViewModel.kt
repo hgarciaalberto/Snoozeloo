@@ -2,18 +2,21 @@ package com.devcampus.snoozeloo.ui.screens.trigger
 
 import android.media.RingtoneManager
 import com.devcampus.snoozeloo.core.BaseViewModel
+import com.devcampus.snoozeloo.core.State
 import com.devcampus.snoozeloo.core.UIEvent
+import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.ui.screens.trigger.AlarmTriggerViewModel.AlarmTriggerState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class AlarmTriggerViewModel @Inject constructor() : BaseViewModel<AlarmTriggerState>() {
-
-    init {
-        handleEvent(TriggerAlarmEvents.SetupAlarm(true))
-    }
+class AlarmTriggerViewModel @Inject constructor() : BaseViewModel<AlarmTriggerState>(
+    defaultState = UiState(
+        state = State.Loading(),
+        data = AlarmTriggerState()
+    )
+) {
 
     override fun handleEvent(event: UIEvent) {
         when (event) {
@@ -30,7 +33,7 @@ class AlarmTriggerViewModel @Inject constructor() : BaseViewModel<AlarmTriggerSt
     }
 
     data class AlarmTriggerState(
-        val isAlarmOn: Boolean,
+        val isAlarmOn: Boolean = true,
     )
 
     companion object {

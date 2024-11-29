@@ -1,8 +1,7 @@
 package com.devcampus.snoozeloo.di
 
-import android.app.Application
 import android.content.Context
-import com.devcampus.snoozeloo.SetAlarmUseCase
+import com.devcampus.snoozeloo.usecases.SetAlarmUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
