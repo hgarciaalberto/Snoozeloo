@@ -1,8 +1,8 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
-import com.devcampus.snoozeloo.dto.AlarmEntity
-
 data class AlarmDetailState(
-    val alarm: AlarmEntity?,
+    val label: String? = null,
+//    val hour: String? = null,
+//    val minute: String? = null,
     val isDialogVisible: Boolean = false,
 )

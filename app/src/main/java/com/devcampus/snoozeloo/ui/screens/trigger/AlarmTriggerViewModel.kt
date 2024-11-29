@@ -1,15 +1,39 @@
 package com.devcampus.snoozeloo.ui.screens.trigger
 
+import android.media.RingtoneManager
 import com.devcampus.snoozeloo.core.BaseViewModel
-import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.ui.screens.trigger.AlarmTriggerViewModel.AlarmTriggerState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AlarmTriggerViewModel @Inject constructor() : BaseViewModel<AlarmTriggerState>() {
 
+    init {
+        handleEvent(TriggerAlarmEvents.SetupAlarm(true))
+    }
+
+    override fun handleEvent(event: UIEvent) {
+        when (event) {
+            is TriggerAlarmEvents.SetupAlarm -> setupAlarm(event.isAlarmOn)
+            else -> super.handleEvent(event)
+        }
+    }
+
+    fun setupAlarm(isAlarmOn: Boolean) {
+        Timber.d("Set Alarm: $isAlarmOn")
+        emitStateCopy {
+            it?.copy(isAlarmOn = isAlarmOn)
+        }
+    }
+
     data class AlarmTriggerState(
-        val alarms: AlarmEntity,
+        val isAlarmOn: Boolean,
     )
+
+    companion object {
+        val URI_RINGTONE = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+    }
 }

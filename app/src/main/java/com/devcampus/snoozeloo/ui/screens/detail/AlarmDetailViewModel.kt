@@ -1,23 +1,32 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import com.devcampus.snoozeloo.SetAlarmUseCase
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
+import com.devcampus.snoozeloo.receivers.AlarmReceiver
 import com.devcampus.snoozeloo.repository.room.AlarmDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class AlarmDetailViewModel @Inject constructor(
     private val alarmDao: AlarmDao,
+    private val setAlarmUseCase: SetAlarmUseCase
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
-        data = AlarmDetailState(alarm = null)
+        data = AlarmDetailState()
     )
 ) {
 
@@ -26,9 +35,8 @@ class AlarmDetailViewModel @Inject constructor(
             is AlarmDetailEvent.ChangeAlarmNameEvent -> {
                 emitStateCopy {
                     it?.copy(
-                        alarm = it.alarm?.copy(
-                            label = event.name
-                        )
+                        label = event.label,
+                        isDialogVisible = false
                     )
                 }
             }
@@ -40,48 +48,19 @@ class AlarmDetailViewModel @Inject constructor(
                 emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
 
-//            is AlarmDetailEvent.ChangeMinuteEvent -> {
-//                emitStateCopy {
-//                    it?.copy(
-//                        alarm = it.alarm.copy(
-//                            time = Calendar.getInstance().apply {
-//                                time = it.alarm.time
-//                                set(Calendar.MINUTE, event.minute.toInt())
-//                            }.time
-//                        )
-//                    )
-//                }
-//            }
-//
-//            is AlarmDetailEvent.ChangeHourEvent -> {
-//                emitStateCopy {
-//                    it?.copy(
-//                        alarm = it.alarm.copy(
-//                            time = Calendar.getInstance().apply {
-//                                time = it.alarm.time
-//                                set(Calendar.MINUTE, event.hour.toInt())
-//                            }.time
-//                        )
-//                    )
-//                }
-//            }
 
             is AlarmDetailEvent.SaveAlarmEvent -> {
                 launch {
-                    emitStateCopySuspend {
-                        it?.copy(
-                            alarm = it.alarm?.copy(
-                                time = Calendar.getInstance().apply {
-                                    time = it.alarm.time
-                                    set(Calendar.HOUR_OF_DAY, event.hour.toInt())
-                                    set(Calendar.MINUTE, event.minute.toInt())
-                                }.time
-                            )
-                        )
-                    }
-                    addAlarm(alarm = state.value.data?.alarm ?: AlarmEntity())
-                    emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
+                    val alarm = addAlarm(
+                        alarmId = event.alarm?.id ?: -1,
+                        hour = event.hour,
+                        minute = event.minute,
+                        label = state.value.data?.label ?: ""
+                    )
+                    setAlarmUseCase(alarm)
+                    //setAlarmInSystem(event.context, alarm)
                 }
+                emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
 
             is AlarmDetailEvent.ChangeLabelDialogVisibilityEvent -> {
@@ -98,20 +77,77 @@ class AlarmDetailViewModel @Inject constructor(
         }
     }
 
+    fun setAlarmInSystem(context: Context, alarm: AlarmEntity?) {
+        if (alarm == null) return
+
+        var alarmMgr: AlarmManager? = null
+
+        alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("alarm", alarm)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            alarm.id, // Use same id that is used to schedule the alarm to cancel it
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        Timber.tag("alarm").d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
+        alarmMgr.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            alarm.time.time.minus(
+                Calendar.getInstance().apply {
+                    set(Calendar.SECOND, 0)
+                }.timeInMillis
+            ),
+            AlarmManager.INTERVAL_DAY,
+            pendingIntent
+        )
+    }
+
     fun setupAlarm(alarm: AlarmEntity?) {
         emitStateCopy {
             it?.copy(
-                alarm = alarm
+                label = alarm?.label,
             )
         }
     }
 
-    private suspend fun addAlarm(alarm: AlarmEntity) = alarmDao.insertAlarm(
-        AlarmEntity(
-            label = alarm.label,
-            time = alarm.time,
-            repeat = "Daily",
-            enabled = true
+    private suspend fun addAlarm(alarmId: Int, hour: Int, minute: Int, label: String): AlarmEntity? {
+
+        var alarm = AlarmEntity(
+            label = label,
+            time = Calendar.getInstance().apply {
+                time = time
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+            }.time,
+            repeat = "",
+            enabled = true,
         )
-    )
+
+        // Set up the id only if it is != -1 (existing alarm)
+        if (alarmId > 0) {
+            alarm = alarm.copy(id = alarmId)
+        }
+
+        // Check the id of the alarm already exists in the database to insert or update the alarm
+        val existingAlarm = alarmDao.getAlarmById(alarm.id).firstOrNull()
+       if (existingAlarm == null || existingAlarm.id == -1) {
+            // Insert the new alarm
+            Timber.d("Inserting alarm: $alarm")
+            alarmDao.insertAlarm(alarm).also { newId ->
+                alarm = alarm.copy(id = newId.toInt()) // Set up the id of the new alarm
+            }
+        } else {
+            // Update the existing alarm
+            Timber.d("Updating alarm: $alarm")
+            alarmDao.updateAlarm(alarm)
+        }
+
+        return alarm
+    }
 }
