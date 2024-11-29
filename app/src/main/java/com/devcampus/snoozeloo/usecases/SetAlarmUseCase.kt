@@ -38,4 +38,21 @@ class SetAlarmUseCase(val context: Context) {
             pendingIntent
         )
     }
+
+    fun cancelAlarm(alarm: AlarmEntity) {
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("alarm", alarm)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            alarm.id,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        Timber.tag("alarm").d("Canceling alarm with ID: ${alarm.id}")
+        alarmMgr.cancel(pendingIntent) // Cancela la alarma programada
+    }
 }
