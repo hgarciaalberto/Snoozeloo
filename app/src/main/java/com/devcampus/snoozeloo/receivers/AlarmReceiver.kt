@@ -37,12 +37,13 @@ class AlarmReceiver : BroadcastReceiver() {
         )
         notificationManager.createNotificationChannel(channel)
 
-
         // Create an Intent to open AlarmTriggerScreen
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("alarm", alarm)
         }
+
+        context.startActivity(intent)
 
         // Create a PendingIntent
         val pendingIntent = PendingIntent.getActivity(
@@ -60,7 +61,7 @@ class AlarmReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
-            .setContentIntent(pendingIntent)
+            .setFullScreenIntent(pendingIntent, true)
             .build()
 
         // Show notification

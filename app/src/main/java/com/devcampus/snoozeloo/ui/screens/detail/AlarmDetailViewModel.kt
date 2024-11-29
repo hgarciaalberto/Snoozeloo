@@ -1,18 +1,13 @@
 package com.devcampus.snoozeloo.ui.screens.detail
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import com.devcampus.snoozeloo.SetAlarmUseCase
 import com.devcampus.snoozeloo.core.BaseViewModel
 import com.devcampus.snoozeloo.core.CommonUiEvent
 import com.devcampus.snoozeloo.core.State
 import com.devcampus.snoozeloo.core.UIEvent
 import com.devcampus.snoozeloo.core.UiState
 import com.devcampus.snoozeloo.dto.AlarmEntity
-import com.devcampus.snoozeloo.receivers.AlarmReceiver
 import com.devcampus.snoozeloo.repository.room.AlarmDao
+import com.devcampus.snoozeloo.usecases.SetAlarmUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import timber.log.Timber
@@ -22,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AlarmDetailViewModel @Inject constructor(
     private val alarmDao: AlarmDao,
-    private val setAlarmUseCase: SetAlarmUseCase
+    private val setAlarmUseCase: SetAlarmUseCase,
 ) : BaseViewModel<AlarmDetailState>(
     defaultState = UiState(
         state = State.Loading(),
@@ -58,7 +53,6 @@ class AlarmDetailViewModel @Inject constructor(
                         label = state.value.data?.label ?: ""
                     )
                     setAlarmUseCase(alarm)
-                    //setAlarmInSystem(event.context, alarm)
                 }
                 emitEvent(CommonUiEvent.NavigationEvent.NavigateBack)
             }
@@ -75,36 +69,6 @@ class AlarmDetailViewModel @Inject constructor(
                 super.handleEvent(event)
             }
         }
-    }
-
-    fun setAlarmInSystem(context: Context, alarm: AlarmEntity?) {
-        if (alarm == null) return
-
-        var alarmMgr: AlarmManager? = null
-
-        alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("alarm", alarm)
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            alarm.id, // Use same id that is used to schedule the alarm to cancel it
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        Timber.tag("alarm").d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
-        alarmMgr.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            alarm.time.time.minus(
-                Calendar.getInstance().apply {
-                    set(Calendar.SECOND, 0)
-                }.timeInMillis
-            ),
-            AlarmManager.INTERVAL_DAY,
-            pendingIntent
-        )
     }
 
     fun setupAlarm(alarm: AlarmEntity?) {
@@ -136,7 +100,7 @@ class AlarmDetailViewModel @Inject constructor(
 
         // Check the id of the alarm already exists in the database to insert or update the alarm
         val existingAlarm = alarmDao.getAlarmById(alarm.id).firstOrNull()
-       if (existingAlarm == null || existingAlarm.id == -1) {
+        if (existingAlarm == null || existingAlarm.id == -1) {
             // Insert the new alarm
             Timber.d("Inserting alarm: $alarm")
             alarmDao.insertAlarm(alarm).also { newId ->

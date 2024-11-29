@@ -1,5 +1,6 @@
 package com.devcampus.snoozeloo
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,7 +31,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.primary,
                 ) {
-                    AppNavigation(intent.extras?.getParcelable<AlarmEntity>("alarm"))
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        AppNavigation(intent.extras?.getParcelable("alarm", AlarmEntity::class.java))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        AppNavigation(intent.extras?.getParcelable<AlarmEntity>("alarm"))
+                    }
                 }
             }
         }

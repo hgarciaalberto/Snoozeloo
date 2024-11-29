@@ -1,4 +1,4 @@
-package com.devcampus.snoozeloo
+package com.devcampus.snoozeloo.usecases
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -10,8 +10,7 @@ import timber.log.Timber
 import java.util.Calendar
 
 
-
-class SetAlarmUseCase(val context: Context)  {
+class SetAlarmUseCase(val context: Context) {
     operator fun invoke(alarm: AlarmEntity?) {
         if (alarm == null) return
 
@@ -29,8 +28,7 @@ class SetAlarmUseCase(val context: Context)  {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        Timber.tag("alarm")
-            .d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
+        Timber.tag("alarm").d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
         alarmMgr.setRepeating(
             AlarmManager.RTC_WAKEUP,
             alarm.time.time.minus(
