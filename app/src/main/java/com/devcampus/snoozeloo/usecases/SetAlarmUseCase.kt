@@ -31,10 +31,9 @@ class SetAlarmUseCase(val context: Context) {
         val timeDifferenceInSeconds = (alarm.time.time - Calendar.getInstance().timeInMillis) / 1000
         Timber.tag("alarm").d("Time difference in seconds: $timeDifferenceInSeconds")
 
-        alarmMgr.setRepeating(
+        alarmMgr.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             alarm.time.time,
-            AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
     }
