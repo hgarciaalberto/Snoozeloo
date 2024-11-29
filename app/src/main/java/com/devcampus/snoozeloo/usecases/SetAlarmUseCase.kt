@@ -9,7 +9,6 @@ import com.devcampus.snoozeloo.receivers.AlarmReceiver
 import timber.log.Timber
 import java.util.Calendar
 
-
 class SetAlarmUseCase(val context: Context) {
     operator fun invoke(alarm: AlarmEntity?) {
         if (alarm == null) return
@@ -28,14 +27,13 @@ class SetAlarmUseCase(val context: Context) {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        Timber.tag("alarm").d("millis til alarm: ${alarm.time.time.minus(Calendar.getInstance().timeInMillis)}")
+        Timber.tag("alarm").d("Alarm scheduled for: ${alarm.time}, current time: ${Calendar.getInstance().time}")
+        val timeDifferenceInSeconds = (alarm.time.time - Calendar.getInstance().timeInMillis) / 1000
+        Timber.tag("alarm").d("Time difference in seconds: $timeDifferenceInSeconds")
+
         alarmMgr.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            alarm.time.time.minus(
-                Calendar.getInstance().apply {
-                    set(Calendar.SECOND, 0)
-                }.timeInMillis
-            ),
+            alarm.time.time,
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )

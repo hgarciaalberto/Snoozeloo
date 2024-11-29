@@ -92,12 +92,6 @@ fun AlarmDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-//            changeMinute = {
-//                viewModel.handleEvent(AlarmDetailEvent.ChangeMinuteEvent(it))
-//            },
-//            changeHour = {
-//                viewModel.handleEvent(AlarmDetailEvent.ChangeHourEvent(it))
-//            },
             showDialog = {
                 viewModel.handleEvent(AlarmDetailEvent.ChangeLabelDialogVisibilityEvent(true))
             },

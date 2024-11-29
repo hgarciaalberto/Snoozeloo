@@ -87,8 +87,6 @@ fun AlarmTriggerScreen(
         }
     }
 
-
-
     AlarmTriggerContent(
         alarm = alarm,
         modifier = Modifier.fillMaxSize(),

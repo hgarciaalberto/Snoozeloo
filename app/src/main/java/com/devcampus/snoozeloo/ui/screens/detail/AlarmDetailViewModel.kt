@@ -84,10 +84,14 @@ class AlarmDetailViewModel @Inject constructor(
         var alarm = AlarmEntity(
             label = label,
             time = Calendar.getInstance().apply {
-                time = time
+                if (get(Calendar.HOUR_OF_DAY) > hour ||
+                    (get(Calendar.HOUR_OF_DAY) == hour && get(Calendar.MINUTE) >= minute)) {
+                    add(Calendar.DAY_OF_YEAR, 1) // Setup next day
+                }
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }.time,
             repeat = "",
             enabled = true,

@@ -9,8 +9,6 @@ import java.util.UUID.randomUUID
 sealed class AlarmDetailEvent : UIEvent {
     override val key: UUID = randomUUID()
 
-    //    data class ChangeHourEvent(val hour: String) : AlarmDetailEvent()
-    //    data class ChangeMinuteEvent(val minute: String) : AlarmDetailEvent()
     data class ChangeAlarmNameEvent(val label: String) : AlarmDetailEvent()
     data class DeleteAlarmEvent(val alarm: AlarmEntity) : AlarmDetailEvent()
     data class ChangeLabelDialogVisibilityEvent(val isVisible: Boolean) : AlarmDetailEvent()
